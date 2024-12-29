@@ -1,0 +1,17 @@
+.idea
+.vscode
+
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+*.pyz
+*.py3
+*.py2
+*.pyx
+*.pyd
+
+.DS_Store
+.env
