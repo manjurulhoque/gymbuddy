@@ -16,3 +16,13 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context["user"] = self.request.user
         return context
+
+
+class PrivacyPolicyView(TemplateView):
+    """Privacy Policy page view."""
+    template_name = "privacy_policy.html"
+
+
+class TermsConditionsView(TemplateView):
+    """Terms & Conditions page view."""
+    template_name = "terms_conditions.html"

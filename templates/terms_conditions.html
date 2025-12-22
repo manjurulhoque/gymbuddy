@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Terms & Conditions - GymBuddy{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Header -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl sm:text-5xl font-bold text-slate-900 mb-4">Terms & Conditions</h1>
+        <p class="text-lg text-slate-600">Last updated: {% now "F d, Y" %}</p>
+    </div>
+
+    <!-- Content -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 sm:p-12 space-y-8">
+        <!-- Introduction -->
+        <section>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">1. Agreement to Terms</h2>
+            <p class="text-slate-700 leading-relaxed">
+                By accessing or using GymBuddy ("the Service"), you agree to be bound by these Terms and Conditions ("Terms"). If you disagree with any part of these terms, then you may not access the Service.
+            </p>
+        </section>
+
+        <!-- Use License -->
+        <section>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">2. Use License</h2>
+            <p class="text-slate-700 leading-relaxed mb-3">
+                Permission is granted to temporarily use GymBuddy for personal, non-commercial fitness tracking purposes. This license does not include:
+            </p>
+            <ul class="list-disc list-inside space-y-1 text-slate-700 ml-4">
+                <li>Modifying or copying the materials</li>
+                <li>Using the materials for any commercial purpose</li>
+                <li>Attempting to reverse engineer any software contained in the Service</li>
+                <li>Removing any copyright or other proprietary notations from the materials</li>
+            </ul>
+        </section>
+
+        <!-- User Accounts -->
+        <section>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">3. User Accounts</h2>
+            <div class="space-y-3">
+                <p class="text-slate-700 leading-relaxed">
+                    When you create an account with us, you must provide information that is accurate, complete, and current at all times. You are responsible for:
+                </p>
+                <ul class="list-disc list-inside space-y-1 text-slate-700 ml-4">
+                    <li>Maintaining the security of your account and password</li>
+                    <li>All activities that occur under your account</li>
+                    <li>Notifying us immediately of any unauthorized use</li>
+                    <li>Ensuring that you exit from your account at the end of each session</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Acceptable Use -->
+        <section>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">4. Acceptable Use</h2>
+            <p class="text-slate-700 leading-relaxed mb-3">
+                You agree not to use the Service:
+            </p>
+            <ul class="list-disc list-inside space-y-1 text-slate-700 ml-4">
+                <li>In any way that violates any applicable law or regulation</li>
+                <li>To transmit any malicious code, viruses, or harmful data</li>
+                <li>To impersonate or attempt to impersonate another user or entity</li>
+                <li>To engage in any automated use of the system</li>
+                <li>To interfere with or disrupt the Service or servers</li>
+                <li>To collect or store personal data about other users</li>
+            </ul>
+        </section>
+
+        <!-- Content and Intellectual Property -->
+        <section>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">5. Content and Intellectual Property</h2>
+            <div class="space-y-3">
+                <div>
+                    <h3 class="text-xl font-semibold text-slate-800 mb-2">5.1 Your Content</h3>
+                    <p class="text-slate-700 leading-relaxed">
+                        You retain ownership of any content you submit, post, or display on or through the Service. By submitting content, you grant us a worldwide, non-exclusive, royalty-free license to use, reproduce, and distribute your content for the purpose of operating and providing the Service.
+                    </p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold text-slate-800 mb-2">5.2 Our Content</h3>
+                    <p class="text-slate-700 leading-relaxed">
+                        The Service and its original content, features, and functionality are owned by GymBuddy and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Fitness and Health Disclaimer -->
+        <section>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">6. Fitness and Health Disclaimer</h2>
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-3">
+                <p class="text-amber-800 font-semibold mb-2">⚠️ Important Health Warning</p>
+                <p class="text-amber-700 text-sm leading-relaxed">
+                    GymBuddy is a fitness tracking tool and is not a substitute for professional medical advice, diagnosis, or treatment. Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition or before starting any exercise program.
+                </p>
+            </div>
+            <p class="text-slate-700 leading-relaxed">
+                You acknowledge that:
+            </p>
+            <ul class="list-disc list-inside space-y-1 text-slate-700 ml-4 mt-2">
+                <li>Exercise and fitness activities involve inherent risks of injury</li>
+                <li>You should consult with a healthcare professional before beginning any fitness program</li>
+                <li>You use the Service at your own risk</li>
+                <li>We are not responsible for any injuries or health issues that may result from using our Service</li>
+            </ul>
+        </section>
+
+        <!-- Limitation of Liability -->
+        <section>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">7. Limitation of Liability</h2>
+            <p class="text-slate-700 leading-relaxed">
+                In no event shall GymBuddy, its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential, or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your use of the Service.
+            </p>
+        </section>
+
+        <!-- Indemnification -->
+        <section>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">8. Indemnification</h2>
+            <p class="text-slate-700 leading-relaxed">
+                You agree to defend, indemnify, and hold harmless GymBuddy and its licensee and licensors, and their employees, contractors, agents, officers and directors, from and against any and all claims, damages, obligations, losses, liabilities, costs or debt, and expenses (including but not limited to attorney's fees).
+            </p>
+        </section>
+
+        <!-- Termination -->
+        <section>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">9. Termination</h2>
+            <p class="text-slate-700 leading-relaxed">
+                We may terminate or suspend your account and bar access to the Service immediately, without prior notice or liability, under our sole discretion, for any reason whatsoever and without limitation, including but not limited to a breach of the Terms. Upon termination, your right to use the Service will immediately cease.
+            </p>
+        </section>
+
+        <!-- Changes to Terms -->
+        <section>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">10. Changes to Terms</h2>
+            <p class="text-slate-700 leading-relaxed">
+                We reserve the right, at our sole discretion, to modify or replace these Terms at any time. If a revision is material, we will provide at least 30 days notice prior to any new terms taking effect. What constitutes a material change will be determined at our sole discretion.
+            </p>
+        </section>
+
+        <!-- Governing Law -->
+        <section>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">11. Governing Law</h2>
+            <p class="text-slate-700 leading-relaxed">
+                These Terms shall be interpreted and governed by the laws of the jurisdiction in which GymBuddy operates, without regard to its conflict of law provisions. Our failure to enforce any right or provision of these Terms will not be considered a waiver of those rights.
+            </p>
+        </section>
+
+        <!-- Contact Information -->
+        <section>
+            <h2 class="text-2xl font-bold text-slate-900 mb-4">12. Contact Information</h2>
+            <p class="text-slate-700 leading-relaxed mb-3">
+                If you have any questions about these Terms & Conditions, please contact us:
+            </p>
+            <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                <p class="text-slate-700"><strong>Email:</strong> legal@gymbuddy.com</p>
+                <p class="text-slate-700 mt-2"><strong>Address:</strong> GymBuddy Legal Team</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-8 text-center">
+        <a href="{% url 'core:home' %}" class="inline-flex items-center space-x-2 text-emerald-600 hover:text-emerald-700 font-medium transition-colors duration-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            <span>Back to Home</span>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
