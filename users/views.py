@@ -14,9 +14,9 @@ class LoginView(TemplateView):
     template_name = 'users/login.html'
 
     def dispatch(self, request, *args, **kwargs):
-        """Redirect authenticated users to home page."""
+        """Redirect authenticated users to dashboard."""
         if request.user.is_authenticated:
-            return redirect('home')
+            return redirect('core:dashboard')
         return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
@@ -46,7 +46,7 @@ class LoginView(TemplateView):
                     )
                     
                     # Redirect based on user role
-                    next_url = request.GET.get('next', 'home')
+                    next_url = request.GET.get('next', 'core:dashboard')
                     return redirect(next_url)
                 else:
                     messages.error(
@@ -82,4 +82,4 @@ class LogoutView(View):
         """Handle POST request for logout."""
         logout(request)
         messages.success(request, 'You have been successfully logged out.')
-        return redirect('home')
+        return redirect('core:home')

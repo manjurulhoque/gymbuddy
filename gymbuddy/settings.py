@@ -96,5 +96,5 @@ AUTH_USER_MODEL = "users.User"
 
 # Login URLs
 LOGIN_URL = "users:login"
-LOGIN_REDIRECT_URL = "home"
-LOGOUT_REDIRECT_URL = "home"
+LOGIN_REDIRECT_URL = "core:dashboard"
+LOGOUT_REDIRECT_URL = "core:home"

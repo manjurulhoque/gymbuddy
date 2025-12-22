@@ -22,7 +22,7 @@
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
                 <div class="flex-shrink-0 flex items-center">
-                    <a href="{% url 'home' %}" class="flex items-center space-x-2 group">
+                    <a href="{% url 'core:home' %}" class="flex items-center space-x-2 group">
                         <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center transform group-hover:scale-105 transition-transform duration-200">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
@@ -34,7 +34,7 @@
 
                 <!-- Desktop Navigation -->
                 <div class="hidden md:flex md:items-center md:space-x-8">
-                    <a href="{% url 'home' %}" class="text-slate-700 hover:text-emerald-600 font-medium transition-colors duration-200">Home</a>
+                    <a href="{% url 'core:home' %}" class="text-slate-700 hover:text-emerald-600 font-medium transition-colors duration-200">Home</a>
                     <a href="#features" class="text-slate-700 hover:text-emerald-600 font-medium transition-colors duration-200">Features</a>
                     <a href="#about" class="text-slate-700 hover:text-emerald-600 font-medium transition-colors duration-200">About</a>
                     <a href="#contact" class="text-slate-700 hover:text-emerald-600 font-medium transition-colors duration-200">Contact</a>
@@ -70,7 +70,7 @@
         <!-- Mobile Navigation -->
         <div class="mobile-menu hidden md:hidden border-t border-slate-200">
             <div class="px-4 pt-2 pb-4 space-y-2">
-                <a href="{% url 'home' %}" class="block px-3 py-2 text-slate-700 hover:text-emerald-600 hover:bg-slate-50 rounded-lg transition-colors duration-200">Home</a>
+                    <a href="{% url 'core:home' %}" class="block px-3 py-2 text-slate-700 hover:text-emerald-600 hover:bg-slate-50 rounded-lg transition-colors duration-200">Home</a>
                 <a href="#features" class="block px-3 py-2 text-slate-700 hover:text-emerald-600 hover:bg-slate-50 rounded-lg transition-colors duration-200">Features</a>
                 <a href="#about" class="block px-3 py-2 text-slate-700 hover:text-emerald-600 hover:bg-slate-50 rounded-lg transition-colors duration-200">About</a>
                 <a href="#contact" class="block px-3 py-2 text-slate-700 hover:text-emerald-600 hover:bg-slate-50 rounded-lg transition-colors duration-200">Contact</a>
@@ -140,7 +140,7 @@
                 <div>
                     <h3 class="text-white font-semibold mb-4">Quick Links</h3>
                     <ul class="space-y-2">
-                        <li><a href="{% url 'home' %}" class="hover:text-emerald-400 transition-colors duration-200">Home</a></li>
+                        <li><a href="{% url 'core:home' %}" class="hover:text-emerald-400 transition-colors duration-200">Home</a></li>
                         <li><a href="#features" class="hover:text-emerald-400 transition-colors duration-200">Features</a></li>
                         <li><a href="#about" class="hover:text-emerald-400 transition-colors duration-200">About</a></li>
                         <li><a href="#contact" class="hover:text-emerald-400 transition-colors duration-200">Contact</a></li>
