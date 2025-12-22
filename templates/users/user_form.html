@@ -1,0 +1,67 @@
+{% load static %}
+
+<form id="editUserForm" method="post" action="{% url 'users:user_update' object.pk %}">
+    {% csrf_token %}
+    <div class="bg-white px-6 pt-6 pb-4">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-2xl font-bold text-slate-900">Edit User</h3>
+            <button type="button" onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <div class="space-y-4 max-h-96 overflow-y-auto">
+            {% for field in form %}
+                <div>
+                    <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-slate-700 mb-1">
+                        {{ field.label }}
+                        {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                    </label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="mt-1 text-sm text-red-600">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+                    {% if field.help_text %}
+                        <p class="mt-1 text-xs text-slate-500">{{ field.help_text }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="bg-slate-50 px-6 py-4 flex justify-end space-x-3">
+        <button type="button" onclick="closeEditModal()" class="px-4 py-2 text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors duration-200">
+            Cancel
+        </button>
+        <button type="submit" class="px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-colors duration-200">
+            Update User
+        </button>
+    </div>
+</form>
+
+<script>
+document.getElementById('editUserForm')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(this);
+    formData.append('X-Requested-With', 'XMLHttpRequest');
+    
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + JSON.stringify(data.errors));
+        }
+    });
+});
+</script>
+
