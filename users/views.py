@@ -102,6 +102,8 @@ class UserListView(StaffOrAboveRequiredMixin, ListView):
         queryset = User.objects.all()
         current_user = self.request.user
         search_query = self.request.GET.get('search', '')
+        role_filter = self.request.GET.get('role', '')
+        status_filter = self.request.GET.get('status', '')
         
         # Filter based on user role
         if current_user.is_manager():
@@ -111,6 +113,16 @@ class UserListView(StaffOrAboveRequiredMixin, ListView):
             # Owners can see Trainees and Managers
             queryset = queryset.filter(role__in=[User.Role.TRAINEE, User.Role.MANAGER])
         # Super Admin can see all users
+        
+        # Role filter
+        if role_filter:
+            queryset = queryset.filter(role=role_filter)
+        
+        # Status filter
+        if status_filter == 'active':
+            queryset = queryset.filter(is_active=True)
+        elif status_filter == 'inactive':
+            queryset = queryset.filter(is_active=False)
         
         # Search functionality
         if search_query:
@@ -127,7 +139,24 @@ class UserListView(StaffOrAboveRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['search_query'] = self.request.GET.get('search', '')
+        context['role_filter'] = self.request.GET.get('role', '')
+        context['status_filter'] = self.request.GET.get('status', '')
         context['form'] = UserForm(user=self.request.user)
+        
+        # Get available roles based on current user
+        current_user = self.request.user
+        if current_user.is_super_admin():
+            context['available_roles'] = User.Role.choices
+        elif current_user.is_owner():
+            context['available_roles'] = [
+                choice for choice in User.Role.choices 
+                if choice[0] != User.Role.SUPER_ADMIN
+            ]
+        elif current_user.is_manager():
+            context['available_roles'] = [(User.Role.TRAINEE, User.Role.TRAINEE.label)]
+        else:
+            context['available_roles'] = []
+        
         return context
 
 
