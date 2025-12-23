@@ -1,0 +1,44 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Edit User - GymBuddy{% endblock %}
+{% block page_title %}Edit User{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sm:p-8">
+        <form method="post" action="{% url 'users:user_update' object.pk %}">
+            {% csrf_token %}
+            <div class="space-y-6">
+                {% for field in form %}
+                    <div>
+                        <label for="{{ field.id_for_label }}" class="block text-sm font-semibold text-slate-700 mb-2">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {{ field.errors }}
+                            </div>
+                        {% endif %}
+                        {% if field.help_text %}
+                            <p class="mt-1 text-xs text-slate-500">{{ field.help_text }}</p>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="mt-8 flex items-center justify-end space-x-4">
+                <a href="{% url 'users:user_list' %}" class="px-6 py-2 text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors duration-200">
+                    Cancel
+                </a>
+                <button type="submit" class="px-6 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:from-emerald-600 hover:to-teal-700 transition-colors duration-200 font-semibold">
+                    Update User
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.views.generic import TemplateView, View, ListView, CreateView, UpdateView, DeleteView
@@ -6,7 +6,6 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods
 from django.db import models
-from django.http import JsonResponse
 from django.urls import reverse_lazy
 from .models import User
 from .forms import UserForm, UserUpdateForm
@@ -133,9 +132,10 @@ class UserListView(StaffOrAboveRequiredMixin, ListView):
 
 
 class UserCreateView(StaffOrAboveRequiredMixin, CreateView):
-    """Create view for users (used via AJAX in modal)."""
+    """Create view for users."""
     model = User
     form_class = UserForm
+    template_name = "users/user_create.html"
     login_url = "users:login"
 
     def get_form_kwargs(self):
@@ -146,30 +146,7 @@ class UserCreateView(StaffOrAboveRequiredMixin, CreateView):
     def form_valid(self, form):
         user = form.save()
         messages.success(self.request, f'User {user.get_full_name() or user.username} created successfully!')
-        
-        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({
-                'success': True,
-                'message': f'User {user.get_full_name() or user.username} created successfully!',
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'full_name': user.get_full_name() or user.username,
-                    'email': user.email,
-                    'role': user.get_role_display(),
-                }
-            })
-        
         return redirect('users:user_list')
-
-    def form_invalid(self, form):
-        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({
-                'success': False,
-                'errors': form.errors
-            }, status=400)
-        
-        return super().form_invalid(form)
 
     def get_success_url(self):
         return reverse_lazy('users:user_list')
@@ -179,7 +156,7 @@ class UserUpdateView(StaffOrAboveRequiredMixin, UpdateView):
     """Update view for users."""
     model = User
     form_class = UserUpdateForm
-    template_name = "users/user_form.html"
+    template_name = "users/user_update.html"
     login_url = "users:login"
 
     def get_form_kwargs(self):
@@ -190,23 +167,7 @@ class UserUpdateView(StaffOrAboveRequiredMixin, UpdateView):
     def form_valid(self, form):
         user = form.save()
         messages.success(self.request, f'User {user.get_full_name() or user.username} updated successfully!')
-        
-        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({
-                'success': True,
-                'message': f'User {user.get_full_name() or user.username} updated successfully!',
-            })
-        
         return redirect('users:user_list')
-
-    def form_invalid(self, form):
-        if self.request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({
-                'success': False,
-                'errors': form.errors
-            }, status=400)
-        
-        return super().form_invalid(form)
 
     def get_success_url(self):
         return reverse_lazy('users:user_list')
@@ -229,13 +190,6 @@ class UserDeleteView(SuperAdminOrOwnerRequiredMixin, DeleteView):
         
         user.delete()
         messages.success(request, f'User {username} deleted successfully!')
-        
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return JsonResponse({
-                'success': True,
-                'message': f'User {username} deleted successfully!',
-            })
-        
         return redirect('users:user_list')
 
     def get_success_url(self):
