@@ -1,14 +1,15 @@
 from django.shortcuts import redirect
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
-from django.views.generic import TemplateView, View, ListView, CreateView, UpdateView, DeleteView
+from django.views.generic import TemplateView, View, ListView, CreateView, UpdateView, DeleteView, FormView
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_http_methods
 from django.db import models
 from django.urls import reverse_lazy
 from .models import User
-from .forms import UserForm, UserUpdateForm
+from .forms import UserForm, UserUpdateForm, ProfileForm, ProfilePasswordChangeForm
 from .mixins import StaffOrAboveRequiredMixin, SuperAdminOrOwnerRequiredMixin
 
 
@@ -223,3 +224,55 @@ class UserDeleteView(SuperAdminOrOwnerRequiredMixin, DeleteView):
 
     def get_success_url(self):
         return reverse_lazy('users:user_list')
+
+
+class ProfileView(LoginRequiredMixin, TemplateView):
+    """View to display user's own profile."""
+    template_name = "users/profile.html"
+    login_url = "users:login"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['user'] = self.request.user
+        return context
+
+
+class ProfileUpdateView(LoginRequiredMixin, UpdateView):
+    """View for users to edit their own profile."""
+    model = User
+    form_class = ProfileForm
+    template_name = "users/profile_edit.html"
+    login_url = "users:login"
+
+    def get_object(self):
+        """Return the current user."""
+        return self.request.user
+
+    def form_valid(self, form):
+        user = form.save()
+        messages.success(self.request, 'Your profile has been updated successfully!')
+        return redirect('users:profile')
+
+    def get_success_url(self):
+        return reverse_lazy('users:profile')
+
+
+class ProfilePasswordChangeView(LoginRequiredMixin, FormView):
+    """View for users to change their password."""
+    form_class = ProfilePasswordChangeForm
+    template_name = "users/profile_password_change.html"
+    login_url = "users:login"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        user = form.save()
+        update_session_auth_hash(self.request, user)
+        messages.success(self.request, 'Your password has been changed successfully!')
+        return redirect('users:profile')
+
+    def get_success_url(self):
+        return reverse_lazy('users:profile')
