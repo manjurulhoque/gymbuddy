@@ -7,7 +7,7 @@ from django.db.models import Q, Sum, Count
 from django.utils import timezone
 from users.mixins import StaffOrAboveRequiredMixin
 from .models import MembershipPlan, Subscription, Payment
-from .forms import SubscriptionForm, PaymentForm, QuickSubscriptionForm
+from .forms import SubscriptionForm, PaymentForm, QuickSubscriptionForm, UserSubscribeForm
 
 
 class MembershipPlanListView(ListView):
@@ -163,6 +163,74 @@ class QuickSubscriptionCreateView(StaffOrAboveRequiredMixin, TemplateView):
             messages.success(
                 request,
                 f'Subscription created successfully for {user.username}!'
+            )
+            return redirect('memberships:subscription_detail', pk=subscription.pk)
+        
+        context = self.get_context_data()
+        context['form'] = form
+        return render(request, self.template_name, context)
+
+
+class UserSubscribeView(LoginRequiredMixin, TemplateView):
+    """View for users to subscribe to a plan"""
+    template_name = 'memberships/user_subscribe.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        plan_id = self.kwargs.get('plan_id')
+        plan = get_object_or_404(MembershipPlan, pk=plan_id, is_active=True)
+        context['plan'] = plan
+        context['form'] = UserSubscribeForm(plan_id=plan_id)
+        
+        # Check if user already has an active subscription
+        active_sub = Subscription.objects.filter(
+            user=self.request.user,
+            status=Subscription.Status.ACTIVE
+        ).first()
+        context['has_active_subscription'] = active_sub is not None
+        context['active_subscription'] = active_sub
+        
+        return context
+    
+    def post(self, request, *args, **kwargs):
+        plan_id = self.kwargs.get('plan_id')
+        plan = get_object_or_404(MembershipPlan, pk=plan_id, is_active=True)
+        form = UserSubscribeForm(request.POST, plan_id=plan_id)
+        
+        if form.is_valid():
+            auto_renew = form.cleaned_data.get('auto_renew', False)
+            
+            # Check if user already has an active subscription
+            active_sub = Subscription.objects.filter(
+                user=request.user,
+                status=Subscription.Status.ACTIVE
+            ).first()
+            
+            if active_sub:
+                messages.warning(
+                    request,
+                    'You already have an active subscription. Please cancel or wait for it to expire before subscribing to a new plan.'
+                )
+                return redirect('memberships:my_subscriptions')
+            
+            # Create subscription with PENDING status
+            # Staff will activate it after payment is processed
+            start_date = timezone.now()
+            end_date = start_date + timezone.timedelta(days=plan.duration_days)
+            
+            subscription = Subscription.objects.create(
+                user=request.user,
+                plan=plan,
+                status=Subscription.Status.PENDING,
+                start_date=start_date,
+                end_date=end_date,
+                auto_renew=auto_renew
+            )
+            
+            messages.success(
+                request,
+                f'Subscription request created successfully! Your subscription will be activated once payment is processed. '
+                f'Please contact the gym to complete your payment of ${plan.price}.'
             )
             return redirect('memberships:subscription_detail', pk=subscription.pk)
         

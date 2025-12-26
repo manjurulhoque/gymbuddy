@@ -197,11 +197,11 @@
 
                 <div class="mt-auto">
                     {% if user.is_authenticated %}
-                        <a href="{% url 'memberships:my_subscriptions' %}" class="block w-full text-center {% if plan.name == 'PREMIUM' %}bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700{% else %}bg-slate-900 text-white hover:bg-slate-800{% endif %} px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform group-hover:scale-105 group-hover:shadow-lg">
+                        <a href="{% url 'memberships:user_subscribe' plan.id %}" class="block w-full text-center {% if plan.name == 'PREMIUM' %}bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700{% else %}bg-slate-900 text-white hover:bg-slate-800{% endif %} px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform group-hover:scale-105 group-hover:shadow-lg">
                             {% if plan.name == 'PREMIUM' %}Get Started{% else %}Choose Plan{% endif %}
                         </a>
                     {% else %}
-                        <a href="{% url 'users:login' %}" class="block w-full text-center {% if plan.name == 'PREMIUM' %}bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700{% else %}bg-slate-900 text-white hover:bg-slate-800{% endif %} px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform group-hover:scale-105 group-hover:shadow-lg">
+                        <a href="{% url 'users:login' %}?next={% url 'memberships:user_subscribe' plan.id %}" class="block w-full text-center {% if plan.name == 'PREMIUM' %}bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700{% else %}bg-slate-900 text-white hover:bg-slate-800{% endif %} px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform group-hover:scale-105 group-hover:shadow-lg">
                             {% if plan.name == 'PREMIUM' %}Get Started{% else %}Choose Plan{% endif %}
                         </a>
                     {% endif %}

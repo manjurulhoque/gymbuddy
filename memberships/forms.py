@@ -91,3 +91,24 @@ class QuickSubscriptionForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields['user'].queryset = User.objects.filter(is_active=True).order_by('username')
 
+
+class UserSubscribeForm(forms.Form):
+    """Form for users to subscribe to a plan themselves"""
+    
+    plan = forms.ModelChoiceField(
+        queryset=MembershipPlan.objects.filter(is_active=True),
+        widget=forms.HiddenInput(),
+        required=True
+    )
+    auto_renew = forms.BooleanField(
+        required=False,
+        initial=False,
+        widget=forms.CheckboxInput(attrs={'class': 'w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500'})
+    )
+    
+    def __init__(self, *args, **kwargs):
+        plan_id = kwargs.pop('plan_id', None)
+        super().__init__(*args, **kwargs)
+        if plan_id:
+            self.fields['plan'].initial = plan_id
+
