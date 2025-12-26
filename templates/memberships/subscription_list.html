@@ -1,0 +1,179 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Subscriptions - GymBuddy{% endblock %}
+{% block page_title %}Subscription Management{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header Actions -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h2 class="text-2xl font-bold text-slate-900">Subscriptions</h2>
+            <p class="text-sm text-slate-600 mt-1">Manage all member subscriptions</p>
+        </div>
+        <div class="flex gap-3">
+            <a href="{% url 'memberships:quick_subscription_create' %}" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors duration-200 font-medium">
+                Quick Create
+            </a>
+            <a href="{% url 'memberships:subscription_create' %}" class="px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors duration-200 font-medium">
+                New Subscription
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6">
+        <form method="get" action="{% url 'memberships:subscription_list' %}" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <!-- Search -->
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </div>
+                    <input 
+                        type="text" 
+                        name="search" 
+                        value="{{ request.GET.search }}"
+                        placeholder="Search users..." 
+                        class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                    >
+                </div>
+
+                <!-- Status Filter -->
+                <div>
+                    <select 
+                        name="status" 
+                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+                    >
+                        <option value="">All Status</option>
+                        {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Plan Filter -->
+                <div>
+                    <select 
+                        name="plan" 
+                        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+                    >
+                        <option value="">All Plans</option>
+                        {% for plan in plans %}
+                            <option value="{{ plan.id }}" {% if request.GET.plan == plan.id|stringformat:"s" %}selected{% endif %}>
+                                {{ plan.display_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Submit Button -->
+                <div>
+                    <button type="submit" class="w-full px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors duration-200 font-medium">
+                        Filter
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Subscriptions Table -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">User</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Plan</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Start Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">End Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Days Remaining</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-slate-200">
+                    {% for subscription in subscriptions %}
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-slate-900">{{ subscription.user.get_full_name|default:subscription.user.username }}</div>
+                            <div class="text-sm text-slate-500">{{ subscription.user.email }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                {{ subscription.plan.display_name }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                                {% if subscription.status == 'ACTIVE' %}bg-emerald-100 text-emerald-800
+                                {% elif subscription.status == 'EXPIRED' %}bg-red-100 text-red-800
+                                {% elif subscription.status == 'CANCELLED' %}bg-slate-100 text-slate-800
+                                {% else %}bg-orange-100 text-orange-800{% endif %}">
+                                {{ subscription.get_status_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                            {{ subscription.start_date|date:"M d, Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                            {{ subscription.end_date|date:"M d, Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if subscription.is_active %}
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full {% if subscription.days_remaining <= 7 %}bg-orange-100 text-orange-800{% else %}bg-emerald-100 text-emerald-800{% endif %}">
+                                    {{ subscription.days_remaining }} days
+                                </span>
+                            {% else %}
+                                <span class="text-sm text-slate-500">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="{% url 'memberships:subscription_detail' subscription.pk %}" class="text-emerald-600 hover:text-emerald-900 mr-3">View</a>
+                            <a href="{% url 'memberships:subscription_update' subscription.pk %}" class="text-blue-600 hover:text-blue-900">Edit</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center text-slate-500">
+                            No subscriptions found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div class="bg-slate-50 px-6 py-4 border-t border-slate-200">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-slate-700">
+                    Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </div>
+                <div class="flex gap-2">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.plan %}&plan={{ request.GET.plan }}{% endif %}" 
+                           class="px-3 py-2 border border-slate-300 rounded-lg hover:bg-slate-100 transition-colors duration-200">
+                            Previous
+                        </a>
+                    {% endif %}
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.plan %}&plan={{ request.GET.plan }}{% endif %}" 
+                           class="px-3 py-2 border border-slate-300 rounded-lg hover:bg-slate-100 transition-colors duration-200">
+                            Next
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

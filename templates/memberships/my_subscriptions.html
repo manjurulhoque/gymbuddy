@@ -1,0 +1,69 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}My Subscriptions - GymBuddy{% endblock %}
+{% block page_title %}My Subscriptions{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    {% if subscriptions %}
+        {% for subscription in subscriptions %}
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex items-start justify-between mb-4">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900">{{ subscription.plan.display_name }}</h3>
+                    <p class="text-sm text-slate-600 mt-1">{{ subscription.plan.description|default:"No description available" }}</p>
+                </div>
+                <span class="px-3 py-1 text-sm font-semibold rounded-full 
+                    {% if subscription.status == 'ACTIVE' %}bg-emerald-100 text-emerald-800
+                    {% elif subscription.status == 'EXPIRED' %}bg-red-100 text-red-800
+                    {% elif subscription.status == 'CANCELLED' %}bg-slate-100 text-slate-800
+                    {% else %}bg-orange-100 text-orange-800{% endif %}">
+                    {{ subscription.get_status_display }}
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                    <p class="text-sm font-medium text-slate-500">Start Date</p>
+                    <p class="text-lg font-semibold text-slate-900">{{ subscription.start_date|date:"M d, Y" }}</p>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-slate-500">End Date</p>
+                    <p class="text-lg font-semibold text-slate-900">{{ subscription.end_date|date:"M d, Y" }}</p>
+                </div>
+                {% if subscription.is_active %}
+                <div>
+                    <p class="text-sm font-medium text-slate-500">Days Remaining</p>
+                    <p class="text-lg font-semibold {% if subscription.days_remaining <= 7 %}text-orange-600{% else %}text-emerald-600{% endif %}">
+                        {{ subscription.days_remaining }} days
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="flex items-center justify-between pt-4 border-t border-slate-200">
+                <div>
+                    <p class="text-sm text-slate-600">Price: <span class="font-semibold text-slate-900">${{ subscription.plan.price }}/month</span></p>
+                    {% if subscription.auto_renew %}
+                        <p class="text-xs text-emerald-600 mt-1">Auto-renewal enabled</p>
+                    {% endif %}
+                </div>
+                <a href="{% url 'memberships:subscription_detail' subscription.pk %}" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors duration-200 font-medium">
+                    View Details
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
+            <svg class="mx-auto h-16 w-16 text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">No Subscriptions</h3>
+            <p class="text-sm text-slate-600">You don't have any active subscriptions yet.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+

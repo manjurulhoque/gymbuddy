@@ -1,0 +1,100 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Quick Create Subscription - GymBuddy{% endblock %}
+{% block page_title %}Quick Create Subscription{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sm:p-8">
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-slate-900 mb-2">Quick Subscription</h3>
+            <p class="text-sm text-slate-600">Create a new subscription with auto-calculated dates based on the selected plan.</p>
+        </div>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="space-y-4">
+                <!-- User -->
+                <div>
+                    <label for="{{ form.user.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-2">
+                        User <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.user }}
+                    {% if form.user.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.user.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Plan -->
+                <div>
+                    <label for="{{ form.plan.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-2">
+                        Plan <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.plan }}
+                    {% if form.plan.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.plan.errors.0 }}</p>
+                    {% endif %}
+                    
+                    <!-- Plan Details -->
+                    <div id="plan-details" class="mt-4 p-4 bg-slate-50 rounded-lg hidden">
+                        <div class="space-y-2">
+                            <p class="text-sm font-medium text-slate-900">Plan Details:</p>
+                            <p class="text-sm text-slate-600" id="plan-price"></p>
+                            <p class="text-sm text-slate-600" id="plan-duration"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Auto Renew -->
+                <div class="flex items-center">
+                    {{ form.auto_renew }}
+                    <label for="{{ form.auto_renew.id_for_label }}" class="ml-2 text-sm font-medium text-slate-700">
+                        Auto Renew
+                    </label>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex items-center justify-end gap-4 pt-6 border-t border-slate-200">
+                <a href="{% url 'memberships:subscription_list' %}" class="px-6 py-2 border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors duration-200 font-medium">
+                    Cancel
+                </a>
+                <button type="submit" class="px-6 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors duration-200 font-medium">
+                    Create Subscription
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Show plan details when plan is selected
+    const planSelect = document.getElementById('{{ form.plan.id_for_label }}');
+    const planDetails = document.getElementById('plan-details');
+    const planPrice = document.getElementById('plan-price');
+    const planDuration = document.getElementById('plan-duration');
+    
+    const plans = {
+        {% for plan in plans %}
+        {{ plan.id }}: {
+            price: '{{ plan.price }}',
+            duration: {{ plan.duration_days }}
+        },
+        {% endfor %}
+    };
+    
+    planSelect.addEventListener('change', function() {
+        const planId = this.value;
+        if (planId && plans[planId]) {
+            planPrice.textContent = `Price: $${plans[planId].price}/month`;
+            planDuration.textContent = `Duration: ${plans[planId].duration} days`;
+            planDetails.classList.remove('hidden');
+        } else {
+            planDetails.classList.add('hidden');
+        }
+    });
+</script>
+{% endblock %}
+

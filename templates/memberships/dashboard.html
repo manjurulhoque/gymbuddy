@@ -1,0 +1,191 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Membership Dashboard - GymBuddy{% endblock %}
+{% block page_title %}Membership Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Total Subscriptions -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-600">Total Subscriptions</p>
+                    <p class="text-3xl font-bold text-slate-900 mt-2">{{ total_subscriptions }}</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Subscriptions -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-600">Active Subscriptions</p>
+                    <p class="text-3xl font-bold text-emerald-600 mt-2">{{ active_subscriptions }}</p>
+                </div>
+                <div class="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Revenue -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-600">Total Revenue</p>
+                    <p class="text-3xl font-bold text-slate-900 mt-2">${{ total_revenue|floatformat:2 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Payments -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-slate-600">Pending Payments</p>
+                    <p class="text-3xl font-bold text-orange-600 mt-2">{{ pending_payments }}</p>
+                </div>
+                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expiring Soon -->
+    {% if expiring_soon %}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-slate-900">Subscriptions Expiring Soon</h2>
+            <a href="{% url 'memberships:subscription_list' %}?status=ACTIVE" class="text-emerald-600 hover:text-emerald-700 font-medium">View All</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">User</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Plan</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">End Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Days Remaining</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-slate-200">
+                    {% for subscription in expiring_soon %}
+                    <tr class="hover:bg-slate-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-slate-900">{{ subscription.user.get_full_name|default:subscription.user.username }}</div>
+                            <div class="text-sm text-slate-500">{{ subscription.user.email }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-emerald-100 text-emerald-800">
+                                {{ subscription.plan.display_name }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                            {{ subscription.end_date|date:"M d, Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full {% if subscription.days_remaining <= 3 %}bg-red-100 text-red-800{% else %}bg-orange-100 text-orange-800{% endif %}">
+                                {{ subscription.days_remaining }} days
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <a href="{% url 'memberships:subscription_detail' subscription.pk %}" class="text-emerald-600 hover:text-emerald-900">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Subscriptions and Payments -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Recent Subscriptions -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-slate-900">Recent Subscriptions</h2>
+                <a href="{% url 'memberships:subscription_list' %}" class="text-emerald-600 hover:text-emerald-700 font-medium">View All</a>
+            </div>
+            <div class="space-y-4">
+                {% for subscription in recent_subscriptions %}
+                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                    <div>
+                        <p class="text-sm font-medium text-slate-900">{{ subscription.user.get_full_name|default:subscription.user.username }}</p>
+                        <p class="text-xs text-slate-500">{{ subscription.plan.display_name }} • {{ subscription.created_at|date:"M d, Y" }}</p>
+                    </div>
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full {% if subscription.status == 'ACTIVE' %}bg-emerald-100 text-emerald-800{% elif subscription.status == 'EXPIRED' %}bg-red-100 text-red-800{% else %}bg-slate-100 text-slate-800{% endif %}">
+                        {{ subscription.get_status_display }}
+                    </span>
+                </div>
+                {% empty %}
+                <p class="text-sm text-slate-500 text-center py-4">No recent subscriptions</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Recent Payments -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold text-slate-900">Recent Payments</h2>
+                <a href="{% url 'memberships:payment_list' %}" class="text-emerald-600 hover:text-emerald-700 font-medium">View All</a>
+            </div>
+            <div class="space-y-4">
+                {% for payment in recent_payments %}
+                <div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+                    <div>
+                        <p class="text-sm font-medium text-slate-900">${{ payment.amount|floatformat:2 }}</p>
+                        <p class="text-xs text-slate-500">{{ payment.subscription.user.get_full_name|default:payment.subscription.user.username }} • {{ payment.payment_date|date:"M d, Y" }}</p>
+                    </div>
+                    <span class="px-2 py-1 text-xs font-semibold rounded-full {% if payment.status == 'COMPLETED' %}bg-emerald-100 text-emerald-800{% elif payment.status == 'PENDING' %}bg-orange-100 text-orange-800{% else %}bg-red-100 text-red-800{% endif %}">
+                        {{ payment.get_status_display }}
+                    </span>
+                </div>
+                {% empty %}
+                <p class="text-sm text-slate-500 text-center py-4">No recent payments</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Plan Distribution -->
+    {% if plan_distribution %}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h2 class="text-xl font-bold text-slate-900 mb-4">Plan Distribution</h2>
+        <div class="space-y-3">
+            {% for plan in plan_distribution %}
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-sm font-medium text-slate-700">{{ plan.plan__display_name }}</span>
+                    <span class="text-sm text-slate-500">{{ plan.count }} subscribers</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2">
+                    <div class="bg-emerald-600 h-2 rounded-full" style="width: {% widthratio plan.count active_subscriptions 100 %}%"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

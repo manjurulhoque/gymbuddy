@@ -16,8 +16,8 @@
                 Track workouts, set goals, and achieve your best self with GymBuddy. Your ultimate fitness companion.
             </p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <a href="#" class="group bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-200 flex items-center space-x-2">
-                    <span>Get Started Free</span>
+                <a href="#memberships" class="group bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-200 flex items-center space-x-2">
+                    <span>View Plans</span>
                     <svg class="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
                     </svg>
@@ -152,6 +152,102 @@
     </div>
 </section>
 
+<!-- Membership Plans Section -->
+<section id="memberships" class="py-20 bg-white">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+            <h2 class="text-4xl sm:text-5xl font-bold text-slate-900 mb-4">
+                Choose Your Plan
+            </h2>
+            <p class="text-xl text-slate-600 max-w-2xl mx-auto">
+                Flexible membership options designed to fit your fitness journey. Start with Basic or unlock premium features with Premium and VIP plans.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {% for plan in membership_plans %}
+            <div class="membership-card relative bg-gradient-to-br from-white to-slate-50 rounded-2xl border-2 {% if plan.name == 'PREMIUM' %}border-emerald-500 shadow-2xl{% else %}border-slate-200{% endif %} p-8 transition-all duration-500 ease-out cursor-pointer group flex flex-col h-full">
+                {% if plan.name == 'PREMIUM' %}
+                <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                    <span class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-4 py-1 rounded-full text-sm font-semibold shadow-lg">
+                        Most Popular
+                    </span>
+                </div>
+                {% endif %}
+                
+                <div class="text-center mb-6">
+                    <h3 class="text-2xl font-bold text-slate-900 mb-2 group-hover:text-emerald-600 transition-colors duration-300">{{ plan.display_name }}</h3>
+                    <div class="flex items-baseline justify-center gap-2 mb-4">
+                        <span class="text-5xl font-extrabold text-slate-900 group-hover:text-emerald-600 transition-colors duration-300">${{ plan.price }}</span>
+                        <span class="text-slate-600">/month</span>
+                    </div>
+                    <p class="text-slate-600 text-sm mb-6">{{ plan.description }}</p>
+                </div>
+
+                <ul class="space-y-4 mb-8">
+                    {% for feature in plan.features %}
+                    <li class="flex items-start group-hover:translate-x-1 transition-transform duration-300">
+                        <svg class="w-5 h-5 text-emerald-600 mr-3 flex-shrink-0 mt-0.5 group-hover:scale-110 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span class="text-slate-700">{{ feature }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <div class="mt-auto">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'memberships:my_subscriptions' %}" class="block w-full text-center {% if plan.name == 'PREMIUM' %}bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700{% else %}bg-slate-900 text-white hover:bg-slate-800{% endif %} px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform group-hover:scale-105 group-hover:shadow-lg">
+                            {% if plan.name == 'PREMIUM' %}Get Started{% else %}Choose Plan{% endif %}
+                        </a>
+                    {% else %}
+                        <a href="{% url 'users:login' %}" class="block w-full text-center {% if plan.name == 'PREMIUM' %}bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700{% else %}bg-slate-900 text-white hover:bg-slate-800{% endif %} px-6 py-3 rounded-lg font-semibold transition-all duration-300 transform group-hover:scale-105 group-hover:shadow-lg">
+                            {% if plan.name == 'PREMIUM' %}Get Started{% else %}Choose Plan{% endif %}
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-3 text-center py-12">
+                <p class="text-slate-600">Membership plans coming soon!</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-12 text-center">
+            <p class="text-slate-600 mb-4">All plans include a 30-day money-back guarantee</p>
+            <p class="text-sm text-slate-500">Need help choosing? <a href="#contact" class="text-emerald-600 hover:text-emerald-700 font-medium">Contact us</a> and we'll help you find the perfect plan.</p>
+        </div>
+    </div>
+</section>
+
+<style>
+    .membership-card {
+        transform: translateY(0);
+    }
+    
+    .membership-card:hover {
+        transform: translateY(-12px) scale(1.02);
+        box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
+        border-color: rgb(16, 185, 129);
+    }
+    
+    .membership-card.border-emerald-500:hover {
+        transform: translateY(-16px) scale(1.03);
+        box-shadow: 0 25px 50px -12px rgba(16, 185, 129, 0.3);
+    }
+    
+    @media (max-width: 768px) {
+        .membership-card:hover {
+            transform: translateY(-8px) scale(1.01);
+        }
+        
+        .membership-card.border-emerald-500:hover {
+            transform: translateY(-10px) scale(1.02);
+        }
+    }
+</style>
+
 <!-- CTA Section -->
 <section class="py-20 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
     <div class="absolute inset-0 bg-grid-slate-100/[0.05] bg-[size:20px_20px]"></div>
@@ -163,8 +259,8 @@
             Join thousands of users who are already transforming their lives with GymBuddy. Start tracking your progress today.
         </p>
         <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="#" class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-200">
-                Get Started Free
+            <a href="#memberships" class="bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-200">
+                View Membership Plans
             </a>
             <a href="#contact" class="bg-white/10 backdrop-blur-sm text-white px-8 py-4 rounded-xl font-semibold text-lg border border-white/20 hover:bg-white/20 transition-all duration-200">
                 Contact Us
