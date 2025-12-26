@@ -325,3 +325,44 @@ class TrainerTraineeAssignmentForm(forms.ModelForm):
                 )
         
         return cleaned_data
+
+
+class BulkAttendanceForm(forms.Form):
+    """Form for bulk attendance marking."""
+    
+    trainees = forms.ModelMultipleChoiceField(
+        queryset=User.objects.filter(role=User.Role.TRAINEE, is_active=True),
+        required=True,
+        widget=forms.CheckboxSelectMultiple(attrs={
+            'class': 'space-y-2'
+        }),
+        help_text="Select trainees to mark attendance for"
+    )
+    action = forms.ChoiceField(
+        choices=[
+            ('check_in', 'Check In'),
+            ('check_out', 'Check Out'),
+        ],
+        required=True,
+        widget=forms.RadioSelect(attrs={
+            'class': 'space-y-2'
+        }),
+        help_text="Select action to perform"
+    )
+    notes = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500',
+            'rows': 3,
+            'placeholder': 'Optional notes for all selected trainees...'
+        }),
+        help_text="Optional notes to add to all attendance records"
+    )
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        queryset = kwargs.pop('queryset', None)
+        super().__init__(*args, **kwargs)
+        
+        if queryset is not None:
+            self.fields['trainees'].queryset = queryset

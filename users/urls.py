@@ -5,7 +5,7 @@ from .views import (
     AssignmentListView, AssignmentCreateView, AssignmentUpdateView, AssignmentDeleteView,
     TrainerTraineesView, TraineeTrainerView,
     CheckInView, CheckOutView, AttendanceCheckInView, AttendanceHistoryView,
-    AttendanceStatisticsView, TrainerMarkAttendanceView
+    AttendanceStatisticsView, TrainerMarkAttendanceView, BulkAttendanceMarkView
 )
 
 app_name = 'users'
@@ -35,5 +35,6 @@ urlpatterns = [
     path('attendance/history/', AttendanceHistoryView.as_view(), name='attendance_history'),
     path('attendance/statistics/', AttendanceStatisticsView.as_view(), name='attendance_statistics'),
     path('attendance/trainer/mark/', TrainerMarkAttendanceView.as_view(), name='trainer_mark_attendance'),
+    path('attendance/bulk-mark/', BulkAttendanceMarkView.as_view(), name='bulk_attendance_mark'),
 ]
 

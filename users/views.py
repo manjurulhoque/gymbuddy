@@ -13,7 +13,7 @@ from django.utils import timezone
 from datetime import datetime, timedelta
 from django.db.models import Count, Q, Avg, Sum
 from .models import User, TrainerTraineeAssignment, Attendance
-from .forms import UserForm, UserUpdateForm, ProfileForm, ProfilePasswordChangeForm, TrainerTraineeAssignmentForm
+from .forms import UserForm, UserUpdateForm, ProfileForm, ProfilePasswordChangeForm, TrainerTraineeAssignmentForm, BulkAttendanceForm
 from .mixins import StaffOrAboveRequiredMixin, SuperAdminOrOwnerRequiredMixin
 
 
@@ -785,3 +785,170 @@ class TrainerMarkAttendanceView(LoginRequiredMixin, View):
                 messages.success(request, f'Checked out {trainee.get_full_name() or trainee.username} successfully.')
 
         return redirect('users:trainer_mark_attendance')
+
+
+class BulkAttendanceMarkView(LoginRequiredMixin, FormView):
+    """View for trainers and staff to mark attendance for multiple trainees at once."""
+    form_class = BulkAttendanceForm
+    template_name = "users/bulk_attendance_mark.html"
+    login_url = "users:login"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not (request.user.is_trainer() or request.user.is_staff_or_above()):
+            messages.error(request, 'You do not have permission to mark attendance.')
+            return redirect('core:dashboard')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        user = self.request.user
+        
+        # Get available trainees based on user role
+        if user.is_staff_or_above():
+            if user.is_manager():
+                trainees = User.objects.filter(role=User.Role.TRAINEE, is_active=True)
+            elif user.is_owner():
+                trainees = User.objects.filter(role=User.Role.TRAINEE, is_active=True)
+            else:  # Super Admin
+                trainees = User.objects.filter(role=User.Role.TRAINEE, is_active=True)
+        else:
+            # Get trainer's assigned trainees
+            assignments = TrainerTraineeAssignment.objects.filter(
+                trainer=user,
+                is_active=True
+            ).select_related('trainee')
+            trainee_ids = [assignment.trainee_id for assignment in assignments]
+            trainees = User.objects.filter(id__in=trainee_ids, is_active=True)
+        
+        kwargs['queryset'] = trainees
+        kwargs['user'] = user
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # Get available trainees for display
+        if user.is_staff_or_above():
+            if user.is_manager():
+                trainees = User.objects.filter(role=User.Role.TRAINEE, is_active=True)
+            elif user.is_owner():
+                trainees = User.objects.filter(role=User.Role.TRAINEE, is_active=True)
+            else:  # Super Admin
+                trainees = User.objects.filter(role=User.Role.TRAINEE, is_active=True)
+        else:
+            assignments = TrainerTraineeAssignment.objects.filter(
+                trainer=user,
+                is_active=True
+            ).select_related('trainee')
+            trainee_ids = [assignment.trainee_id for assignment in assignments]
+            trainees = User.objects.filter(id__in=trainee_ids, is_active=True)
+        
+        # Get today's attendance status for each trainee
+        today = timezone.now().date()
+        today_attendances = Attendance.objects.filter(
+            trainee__in=trainees,
+            check_in__date=today
+        ).select_related('trainee')
+        
+        attendance_dict = {}
+        for att in today_attendances:
+            if att.check_out is None:
+                attendance_dict[att.trainee_id] = {'status': 'checked_in', 'attendance': att}
+            else:
+                attendance_dict[att.trainee_id] = {'status': 'checked_out', 'attendance': att}
+        
+        trainee_list = []
+        for trainee in trainees:
+            status_info = attendance_dict.get(trainee.id, {'status': 'not_checked_in', 'attendance': None})
+            trainee_list.append({
+                'trainee': trainee,
+                'status': status_info['status'],
+                'attendance': status_info['attendance']
+            })
+        
+        context['trainee_list'] = trainee_list
+        context['today'] = today
+        context['is_staff'] = user.is_staff_or_above()
+        return context
+
+    def form_valid(self, form):
+        trainees = form.cleaned_data['trainees']
+        action = form.cleaned_data['action']
+        notes = form.cleaned_data.get('notes', '')
+        
+        user = self.request.user
+        today = timezone.now().date()
+        success_count = 0
+        warning_count = 0
+        error_messages = []
+        
+        for trainee in trainees:
+            # Verify permission for trainers
+            if not user.is_staff_or_above():
+                assignment = TrainerTraineeAssignment.objects.filter(
+                    trainer=user,
+                    trainee=trainee,
+                    is_active=True
+                ).first()
+                if not assignment:
+                    error_messages.append(f"{trainee.get_full_name() or trainee.username} is not assigned to you.")
+                    continue
+            
+            if action == 'check_in':
+                # Check if already checked in today
+                existing = Attendance.objects.filter(
+                    trainee=trainee,
+                    check_in__date=today,
+                    check_out__isnull=True
+                ).first()
+                
+                if existing:
+                    warning_count += 1
+                    error_messages.append(f"{trainee.get_full_name() or trainee.username} is already checked in.")
+                else:
+                    Attendance.objects.create(
+                        trainee=trainee,
+                        check_in=timezone.now(),
+                        marked_by=user,
+                        notes=notes
+                    )
+                    success_count += 1
+            
+            elif action == 'check_out':
+                # Find active attendance
+                attendance = Attendance.objects.filter(
+                    trainee=trainee,
+                    check_out__isnull=True
+                ).order_by('-check_in').first()
+                
+                if not attendance:
+                    warning_count += 1
+                    error_messages.append(f"{trainee.get_full_name() or trainee.username} is not checked in.")
+                else:
+                    attendance.check_out = timezone.now()
+                    if notes:
+                        attendance.notes = (attendance.notes + '\n' + notes) if attendance.notes else notes
+                    attendance.save()
+                    success_count += 1
+        
+        # Display summary messages
+        if success_count > 0:
+            messages.success(
+                self.request,
+                f'Successfully {action.replace("_", " ")} {success_count} trainee(s).'
+            )
+        
+        if warning_count > 0:
+            messages.warning(
+                self.request,
+                f'{warning_count} trainee(s) could not be processed. See details below.'
+            )
+        
+        if error_messages:
+            for msg in error_messages[:10]:  # Limit to first 10 messages
+                messages.info(self.request, msg)
+            if len(error_messages) > 10:
+                messages.info(self.request, f'... and {len(error_messages) - 10} more messages.')
+        
+        return redirect('users:bulk_attendance_mark')
