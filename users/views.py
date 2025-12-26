@@ -664,23 +664,35 @@ class AttendanceStatisticsView(LoginRequiredMixin, TemplateView):
 
 
 class TrainerMarkAttendanceView(LoginRequiredMixin, View):
-    """View for trainers to mark attendance for their trainees."""
+    """View for trainers and staff to mark attendance for trainees."""
     login_url = "users:login"
 
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_trainer():
-            messages.error(request, 'Only trainers can mark attendance.')
+        if not (request.user.is_trainer() or request.user.is_staff_or_above()):
+            messages.error(request, 'You do not have permission to mark attendance.')
             return redirect('core:dashboard')
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
-        # Get trainer's assigned trainees
-        assignments = TrainerTraineeAssignment.objects.filter(
-            trainer=request.user,
-            is_active=True
-        ).select_related('trainee')
+        user = request.user
         
-        trainees = [assignment.trainee for assignment in assignments]
+        # Staff users can see all trainees, trainers see only assigned ones
+        if user.is_staff_or_above():
+            # Get all trainees based on staff level
+            if user.is_manager():
+                trainees = User.objects.filter(role=User.Role.TRAINEE, is_active=True)
+            elif user.is_owner():
+                trainees = User.objects.filter(role__in=[User.Role.TRAINEE, User.Role.MANAGER], is_active=True)
+            else:  # Super Admin
+                trainees = User.objects.filter(role=User.Role.TRAINEE, is_active=True)
+            trainees = list(trainees)
+        else:
+            # Get trainer's assigned trainees
+            assignments = TrainerTraineeAssignment.objects.filter(
+                trainer=request.user,
+                is_active=True
+            ).select_related('trainee')
+            trainees = [assignment.trainee for assignment in assignments]
         
         # Get today's attendance for these trainees
         today = timezone.now().date()
@@ -700,6 +712,7 @@ class TrainerMarkAttendanceView(LoginRequiredMixin, View):
         context = {
             'trainee_attendance_list': trainee_attendance_list,
             'today': today,
+            'is_staff': user.is_staff_or_above(),
         }
         return render(request, 'users/trainer_mark_attendance.html', context)
 
@@ -712,18 +725,28 @@ class TrainerMarkAttendanceView(LoginRequiredMixin, View):
             messages.error(request, 'Invalid request.')
             return redirect('users:trainer_mark_attendance')
 
-        # Verify trainee is assigned to this trainer
-        assignment = TrainerTraineeAssignment.objects.filter(
-            trainer=request.user,
-            trainee_id=trainee_id,
-            is_active=True
-        ).first()
+        user = request.user
+        
+        # Staff users can mark attendance for any trainee, trainers only for assigned ones
+        if user.is_staff_or_above():
+            try:
+                trainee = User.objects.get(id=trainee_id, role=User.Role.TRAINEE)
+            except User.DoesNotExist:
+                messages.error(request, 'Trainee not found.')
+                return redirect('users:trainer_mark_attendance')
+        else:
+            # Verify trainee is assigned to this trainer
+            assignment = TrainerTraineeAssignment.objects.filter(
+                trainer=request.user,
+                trainee_id=trainee_id,
+                is_active=True
+            ).first()
 
-        if not assignment:
-            messages.error(request, 'Trainee is not assigned to you.')
-            return redirect('users:trainer_mark_attendance')
+            if not assignment:
+                messages.error(request, 'Trainee is not assigned to you.')
+                return redirect('users:trainer_mark_attendance')
 
-        trainee = assignment.trainee
+            trainee = assignment.trainee
 
         if action == 'check_in':
             # Check if already checked in today

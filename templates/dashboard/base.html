@@ -134,10 +134,10 @@
                         </a>
                     </div>
 
-                    {% if user.is_trainer or user.is_trainee %}
-                    <!-- Trainer/Trainee Section -->
+                    <!-- Attendance Section -->
+                    {% if user.is_trainer or user.is_trainee or user.is_staff_or_above %}
                     <div class="pt-4">
-                        <p class="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Fitness</p>
+                        <p class="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Attendance</p>
                         
                         {% if user.is_trainee %}
                         <a href="{% url 'users:attendance_check_in' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-100 menu-item-hover transition-all duration-200 {% if 'attendance_check_in' in request.resolver_match.url_name %}menu-item-active{% endif %}">
@@ -148,7 +148,7 @@
                         </a>
                         {% endif %}
 
-                        {% if user.is_trainer %}
+                        {% if user.is_trainer or user.is_staff_or_above %}
                         <a href="{% url 'users:trainer_mark_attendance' %}" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-100 menu-item-hover transition-all duration-200 {% if 'trainer_mark_attendance' in request.resolver_match.url_name %}menu-item-active{% endif %}">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
@@ -172,6 +172,13 @@
                             <span class="font-medium">Statistics</span>
                         </a>
                         {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {% if user.is_trainer or user.is_trainee %}
+                    <!-- Trainer/Trainee Section -->
+                    <div class="pt-4">
+                        <p class="px-4 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Fitness</p>
                         
                         <a href="#" class="flex items-center space-x-3 px-4 py-3 rounded-lg text-slate-700 hover:bg-slate-100 menu-item-hover transition-all duration-200">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
