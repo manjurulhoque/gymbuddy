@@ -1,0 +1,141 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Check In/Out - GymBuddy{% endblock %}
+{% block page_title %}Check In/Out{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Check In/Out Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sm:p-8">
+        <div class="text-center">
+            {% if is_checked_in %}
+                <!-- Checked In State -->
+                <div class="mb-6">
+                    <div class="w-24 h-24 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                        <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-900 mb-2">You're Checked In</h2>
+                    <p class="text-slate-600 mb-4">Checked in at {{ active_attendance.check_in|date:"g:i A" }}</p>
+                    {% if active_attendance.check_in %}
+                        <p class="text-sm text-slate-500">Date: {{ active_attendance.check_in|date:"F d, Y" }}</p>
+                    {% endif %}
+                </div>
+
+                <form method="post" action="{% url 'users:check_out' %}" class="mt-8">
+                    {% csrf_token %}
+                    <button 
+                        type="submit"
+                        class="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-lg font-semibold hover:from-red-600 hover:to-pink-700 transform hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg text-lg"
+                    >
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        <span>Check Out</span>
+                    </button>
+                </form>
+            {% else %}
+                <!-- Not Checked In State -->
+                <div class="mb-6">
+                    <div class="w-24 h-24 bg-gradient-to-br from-slate-400 to-slate-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                        <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-900 mb-2">Ready to Check In?</h2>
+                    <p class="text-slate-600">Click the button below to check in</p>
+                </div>
+
+                <form method="post" action="{% url 'users:check_in' %}" class="mt-8">
+                    {% csrf_token %}
+                    <button 
+                        type="submit"
+                        class="inline-flex items-center space-x-2 px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg font-semibold hover:from-emerald-600 hover:to-teal-700 transform hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg text-lg"
+                    >
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>Check In</span>
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Today's Summary -->
+    {% if today_attendance %}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h3 class="text-lg font-semibold text-slate-900 mb-4">Today's Summary</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-slate-50 rounded-lg p-4">
+                <p class="text-sm text-slate-600 mb-1">Check In</p>
+                <p class="text-lg font-semibold text-slate-900">{{ today_attendance.check_in|date:"g:i A" }}</p>
+            </div>
+            {% if today_attendance.check_out %}
+            <div class="bg-slate-50 rounded-lg p-4">
+                <p class="text-sm text-slate-600 mb-1">Check Out</p>
+                <p class="text-lg font-semibold text-slate-900">{{ today_attendance.check_out|date:"g:i A" }}</p>
+            </div>
+            <div class="bg-slate-50 rounded-lg p-4">
+                <p class="text-sm text-slate-600 mb-1">Duration</p>
+                <p class="text-lg font-semibold text-slate-900">
+                    {% if today_attendance.duration %}
+                        {{ today_attendance.duration|floatformat:0 }} min
+                    {% else %}
+                        —
+                    {% endif %}
+                </p>
+            </div>
+            {% else %}
+            <div class="bg-slate-50 rounded-lg p-4">
+                <p class="text-sm text-slate-600 mb-1">Status</p>
+                <p class="text-lg font-semibold text-emerald-600">Currently In</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <a 
+            href="{% url 'users:attendance_history' %}"
+            class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow duration-200"
+        >
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-slate-900">Attendance History</h3>
+                    <p class="text-sm text-slate-600">View your past attendance records</p>
+                </div>
+            </div>
+        </a>
+
+        {% if user.is_trainer or user.is_staff_or_above %}
+        <a 
+            href="{% url 'users:attendance_statistics' %}"
+            class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition-shadow duration-200"
+        >
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-slate-900">Statistics</h3>
+                    <p class="text-sm text-slate-600">View attendance statistics</p>
+                </div>
+            </div>
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

@@ -112,3 +112,82 @@ class TrainerTraineeAssignment(models.Model):
 
     def __str__(self):
         return f"{self.trainer.get_full_name() or self.trainer.username} -> {self.trainee.get_full_name() or self.trainee.username}"
+
+
+class Attendance(models.Model):
+    """
+    Model to track attendance (check-in/check-out) for trainees.
+    """
+    trainee = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='attendances',
+        limit_choices_to={'role': User.Role.TRAINEE},
+        help_text="The trainee whose attendance is being tracked"
+    )
+    check_in = models.DateTimeField(
+        help_text="Check-in time"
+    )
+    check_out = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Check-out time (null if still checked in)"
+    )
+    marked_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='marked_attendances',
+        limit_choices_to={'role__in': [User.Role.TRAINER, User.Role.MANAGER, User.Role.OWNER, User.Role.SUPER_ADMIN]},
+        help_text="Trainer or staff member who marked this attendance (null if self-check-in)"
+    )
+    notes = models.TextField(
+        blank=True,
+        null=True,
+        help_text="Additional notes about this attendance"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Attendance"
+        verbose_name_plural = "Attendances"
+        ordering = ['-check_in']
+        indexes = [
+            models.Index(fields=['trainee', '-check_in']),
+            models.Index(fields=['check_in']),
+            models.Index(fields=['marked_by']),
+        ]
+
+    def __str__(self):
+        check_out_status = f" - {self.check_out.strftime('%H:%M')}" if self.check_out else " (Checked In)"
+        return f"{self.trainee.get_full_name() or self.trainee.username} - {self.check_in.strftime('%Y-%m-%d %H:%M')}{check_out_status}"
+
+    @property
+    def duration(self):
+        """Calculate duration in minutes if checked out."""
+        if self.check_out:
+            delta = self.check_out - self.check_in
+            return int(delta.total_seconds() / 60)
+        return None
+
+    def get_duration_display(self):
+        """Get formatted duration string."""
+        if not self.duration:
+            return "—"
+        hours = self.duration // 60
+        minutes = self.duration % 60
+        if hours > 0:
+            return f"{hours}h {minutes}m"
+        return f"{minutes}m"
+
+    @property
+    def is_checked_in(self):
+        """Check if trainee is currently checked in."""
+        return self.check_out is None
+
+    @property
+    def date(self):
+        """Get the date of attendance."""
+        return self.check_in.date()

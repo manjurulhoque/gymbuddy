@@ -1,0 +1,194 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}Attendance Statistics - GymBuddy{% endblock %}
+{% block page_title %}Attendance Statistics{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Today's Count -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-slate-600 mb-1">Today's Attendance</p>
+                    <p class="text-2xl font-bold text-slate-900">{{ today_count }}</p>
+                    <p class="text-xs text-slate-500 mt-1">{{ today_checked_in }} currently in</p>
+                </div>
+                <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- This Week -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-slate-600 mb-1">This Week</p>
+                    <p class="text-2xl font-bold text-slate-900">{{ week_count }}</p>
+                    <p class="text-xs text-slate-500 mt-1">Total check-ins</p>
+                </div>
+                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- This Month -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-slate-600 mb-1">This Month</p>
+                    <p class="text-2xl font-bold text-slate-900">{{ month_count }}</p>
+                    <p class="text-xs text-slate-500 mt-1">Total check-ins</p>
+                </div>
+                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-slate-600 mb-1">Total Records</p>
+                    <p class="text-2xl font-bold text-slate-900">{{ total_count }}</p>
+                    <p class="text-xs text-slate-500 mt-1">{{ total_checked_in }} currently in</p>
+                </div>
+                <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h3 class="text-lg font-semibold text-slate-900 mb-4">Last 7 Days Attendance</h3>
+        <div class="h-64 flex items-end justify-between space-x-2">
+            {% for day in last_7_days %}
+            <div class="flex-1 flex flex-col items-center">
+                <div class="w-full bg-slate-100 rounded-t-lg relative" style="height: {{ day.count|add:0|mul:20|add:20 }}px; min-height: 20px;">
+                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-emerald-500 to-teal-600 rounded-t-lg" style="height: {{ day.count|add:0|mul:20|add:20 }}px; min-height: 20px;"></div>
+                </div>
+                <p class="text-xs text-slate-600 mt-2">{{ day.count }}</p>
+                <p class="text-xs text-slate-500 mt-1">{{ day.date|date:"M d" }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Top Trainees (if applicable) -->
+    {% if top_trainees %}
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+        <h3 class="text-lg font-semibold text-slate-900 mb-4">Top Trainees</h3>
+        <div class="space-y-3">
+            {% for trainee in top_trainees %}
+            <div class="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                        {{ trainee.trainee__username|first|upper }}
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-900">
+                            {{ trainee.trainee__first_name }} {{ trainee.trainee__last_name|default:"" }}
+                        </p>
+                        <p class="text-xs text-slate-500">@{{ trainee.trainee__username }}</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-lg font-bold text-emerald-600">{{ trainee.count }}</p>
+                    <p class="text-xs text-slate-500">check-ins</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Attendances -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div class="p-6 border-b border-slate-200">
+            <h3 class="text-lg font-semibold text-slate-900">Recent Attendances</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Trainee</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Check In</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Check Out</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-slate-200">
+                    {% for attendance in recent_attendances %}
+                    <tr class="hover:bg-slate-50 transition-colors duration-150">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                                    {% if attendance.trainee.profile_picture %}
+                                        <img src="{{ attendance.trainee.profile_picture.url }}" alt="{{ attendance.trainee.username }}" class="w-full h-full rounded-full object-cover">
+                                    {% else %}
+                                        {{ attendance.trainee.username|first|upper }}
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <div class="text-sm font-semibold text-slate-900">
+                                        {{ attendance.trainee.get_full_name|default:attendance.trainee.username }}
+                                    </div>
+                                    <div class="text-xs text-slate-500">@{{ attendance.trainee.username }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                            {{ attendance.check_in|date:"M d, Y" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                            {{ attendance.check_in|date:"g:i A" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
+                            {% if attendance.check_out %}
+                                {{ attendance.check_out|date:"g:i A" }}
+                            {% else %}
+                                <span class="text-slate-400">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if attendance.check_out %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800">
+                                    Checked Out
+                                </span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                    Checked In
+                                </span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-slate-500">
+                            No recent attendances
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

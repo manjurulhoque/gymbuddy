@@ -3,7 +3,9 @@ from .views import (
     LoginView, LogoutView, UserListView, UserCreateView, UserUpdateView, UserDeleteView,
     ProfileView, ProfileUpdateView, ProfilePasswordChangeView,
     AssignmentListView, AssignmentCreateView, AssignmentUpdateView, AssignmentDeleteView,
-    TrainerTraineesView, TraineeTrainerView
+    TrainerTraineesView, TraineeTrainerView,
+    CheckInView, CheckOutView, AttendanceCheckInView, AttendanceHistoryView,
+    AttendanceStatisticsView, TrainerMarkAttendanceView
 )
 
 app_name = 'users'
@@ -26,5 +28,12 @@ urlpatterns = [
     # Trainer and Trainee views
     path('trainer/trainees/', TrainerTraineesView.as_view(), name='trainer_trainees'),
     path('trainee/trainer/', TraineeTrainerView.as_view(), name='trainee_trainer'),
+    # Attendance URLs
+    path('attendance/check-in/', AttendanceCheckInView.as_view(), name='attendance_check_in'),
+    path('attendance/check-in/action/', CheckInView.as_view(), name='check_in'),
+    path('attendance/check-out/action/', CheckOutView.as_view(), name='check_out'),
+    path('attendance/history/', AttendanceHistoryView.as_view(), name='attendance_history'),
+    path('attendance/statistics/', AttendanceStatisticsView.as_view(), name='attendance_statistics'),
+    path('attendance/trainer/mark/', TrainerMarkAttendanceView.as_view(), name='trainer_mark_attendance'),
 ]
 
