@@ -1,0 +1,83 @@
+{% extends "dashboard/base.html" %}
+{% load static %}
+
+{% block title %}My Trainer - GymBuddy{% endblock %}
+{% block page_title %}My Assigned Trainer{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    {% if trainer %}
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sm:p-8">
+            <div class="max-w-2xl mx-auto">
+                <!-- Trainer Card -->
+                <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-8">
+                    <div class="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
+                        <!-- Trainer Avatar -->
+                        <div class="w-24 h-24 bg-gradient-to-br from-amber-500 to-orange-600 rounded-full flex items-center justify-center text-white text-3xl font-bold flex-shrink-0 shadow-lg">
+                            {% if trainer.profile_picture %}
+                                <img src="{{ trainer.profile_picture.url }}" alt="{{ trainer.username }}" class="w-full h-full rounded-full object-cover">
+                            {% else %}
+                                {{ trainer.username|first|upper }}
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Trainer Info -->
+                        <div class="flex-1 text-center sm:text-left">
+                            <h2 class="text-2xl font-bold text-slate-900 mb-2">
+                                {{ trainer.get_full_name|default:trainer.username }}
+                            </h2>
+                            <p class="text-slate-600 mb-4">@{{ trainer.username }}</p>
+                            
+                            <div class="space-y-2 text-sm">
+                                {% if trainer.email %}
+                                <div class="flex items-center justify-center sm:justify-start text-slate-700">
+                                    <svg class="w-5 h-5 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <span>{{ trainer.email }}</span>
+                                </div>
+                                {% endif %}
+                                {% if trainer.phone_number %}
+                                <div class="flex items-center justify-center sm:justify-start text-slate-700">
+                                    <svg class="w-5 h-5 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                    </svg>
+                                    <span>{{ trainer.phone_number }}</span>
+                                </div>
+                                {% endif %}
+                                {% if assignment.assigned_at %}
+                                <div class="flex items-center justify-center sm:justify-start text-slate-600 pt-2 border-t border-amber-200">
+                                    <svg class="w-5 h-5 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <span>Assigned on {{ assignment.assigned_at|date:"F d, Y" }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assignment Notes -->
+                {% if assignment.notes %}
+                <div class="mt-6 bg-slate-50 rounded-lg border border-slate-200 p-6">
+                    <h3 class="text-lg font-semibold text-slate-900 mb-2">Assignment Notes</h3>
+                    <p class="text-slate-600 whitespace-pre-wrap">{{ assignment.notes }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    {% else %}
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center">
+            <svg class="w-16 h-16 mx-auto mb-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            <h3 class="text-xl font-bold text-slate-900 mb-2">No Trainer Assigned</h3>
+            <p class="text-slate-600 mb-6">
+                You don't have a trainer assigned to you yet. Contact an administrator to get assigned a trainer.
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+

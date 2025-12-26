@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
-from .models import User
+from .models import User, TrainerTraineeAssignment
 
 
 class UserForm(UserCreationForm):
@@ -240,3 +240,88 @@ class ProfilePasswordChangeForm(PasswordChangeForm):
             'class': 'w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500',
             'placeholder': 'Confirm New Password'
         })
+
+
+class TrainerTraineeAssignmentForm(forms.ModelForm):
+    """Form for creating and updating trainer-trainee assignments."""
+    
+    trainer = forms.ModelChoiceField(
+        queryset=User.objects.filter(role=User.Role.TRAINER, is_active=True),
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500'
+        }),
+        help_text="Select a trainer"
+    )
+    trainee = forms.ModelChoiceField(
+        queryset=User.objects.filter(role=User.Role.TRAINEE, is_active=True),
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500'
+        }),
+        help_text="Select a trainee"
+    )
+    notes = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500',
+            'rows': 4,
+            'placeholder': 'Optional notes about this assignment...'
+        })
+    )
+    is_active = forms.BooleanField(
+        required=False,
+        initial=True,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500'
+        })
+    )
+
+    class Meta:
+        model = TrainerTraineeAssignment
+        fields = ('trainer', 'trainee', 'notes', 'is_active')
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        # For new assignments, exclude already assigned trainees
+        # For editing, allow the current trainee to be selected
+        if self.instance and self.instance.pk:
+            # When editing, exclude other active assignments but allow the current one
+            assigned_trainee_ids = TrainerTraineeAssignment.objects.filter(
+                is_active=True
+            ).exclude(pk=self.instance.pk).values_list('trainee_id', flat=True)
+            self.fields['trainee'].queryset = self.fields['trainee'].queryset.exclude(
+                id__in=assigned_trainee_ids
+            )
+        else:
+            # For new assignments, exclude all assigned trainees
+            assigned_trainee_ids = TrainerTraineeAssignment.objects.filter(
+                is_active=True
+            ).values_list('trainee_id', flat=True)
+            self.fields['trainee'].queryset = self.fields['trainee'].queryset.exclude(
+                id__in=assigned_trainee_ids
+            )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        trainer = cleaned_data.get('trainer')
+        trainee = cleaned_data.get('trainee')
+        
+        if trainer and trainee:
+            # Check if assignment already exists (excluding current instance if editing)
+            existing = TrainerTraineeAssignment.objects.filter(
+                trainer=trainer,
+                trainee=trainee,
+                is_active=True
+            )
+            if self.instance and self.instance.pk:
+                existing = existing.exclude(pk=self.instance.pk)
+            
+            if existing.exists():
+                raise forms.ValidationError(
+                    f"This trainee is already assigned to {trainer.get_full_name() or trainer.username}."
+                )
+        
+        return cleaned_data
