@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, TrainerTraineeAssignment, Attendance
+from .models import User, TrainerTraineeAssignment, Attendance, TrainerAvailability, TrainingSession, SessionReminder
 
 
 @admin.register(User)
@@ -94,3 +94,90 @@ class AttendanceAdmin(admin.ModelAdmin):
         return "Yes" if obj.is_checked_in else "No"
     is_checked_in_display.short_description = "Currently Checked In"
     is_checked_in_display.boolean = True
+
+
+@admin.register(TrainerAvailability)
+class TrainerAvailabilityAdmin(admin.ModelAdmin):
+    """Admin interface for TrainerAvailability model"""
+    
+    list_display = ['trainer', 'day_of_week', 'start_time', 'end_time', 'is_available']
+    list_filter = ['day_of_week', 'is_available', 'trainer']
+    search_fields = ['trainer__username', 'trainer__first_name', 'trainer__last_name']
+    readonly_fields = ['created_at', 'updated_at']
+    ordering = ['trainer', 'day_of_week', 'start_time']
+    
+    fieldsets = (
+        ('Availability Details', {
+            'fields': ('trainer', 'day_of_week', 'start_time', 'end_time', 'is_available')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(TrainingSession)
+class TrainingSessionAdmin(admin.ModelAdmin):
+    """Admin interface for TrainingSession model"""
+    
+    list_display = ['trainer', 'trainee', 'session_date', 'start_time', 'end_time', 'status', 'created_at']
+    list_filter = ['status', 'session_date', 'trainer', 'trainee']
+    search_fields = ['trainer__username', 'trainer__first_name', 'trainer__last_name',
+                     'trainee__username', 'trainee__first_name', 'trainee__last_name']
+    readonly_fields = ['created_at', 'updated_at', 'duration_minutes_display']
+    ordering = ['-session_date', '-start_time']
+    date_hierarchy = 'session_date'
+    
+    fieldsets = (
+        ('Session Details', {
+            'fields': ('trainer', 'trainee', 'session_date', 'start_time', 'end_time', 'status')
+        }),
+        ('Additional Information', {
+            'fields': ('notes',)
+        }),
+        ('Cancellation Information', {
+            'fields': ('cancelled_at', 'cancelled_by', 'cancellation_reason'),
+            'classes': ('collapse',)
+        }),
+        ('Metadata', {
+            'fields': ('created_by', 'created_at', 'updated_at', 'duration_minutes_display'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def duration_minutes_display(self, obj):
+        """Display duration in a readable format"""
+        return f"{obj.duration_minutes} minutes"
+    duration_minutes_display.short_description = "Duration"
+
+
+@admin.register(SessionReminder)
+class SessionReminderAdmin(admin.ModelAdmin):
+    """Admin interface for SessionReminder model"""
+    
+    list_display = ['session', 'reminder_type', 'reminder_time', 'sent', 'sent_at']
+    list_filter = ['reminder_type', 'sent', 'reminder_time']
+    search_fields = ['session__trainer__username', 'session__trainee__username']
+    readonly_fields = ['created_at', 'updated_at', 'is_due_display']
+    ordering = ['reminder_time']
+    date_hierarchy = 'reminder_time'
+    
+    fieldsets = (
+        ('Reminder Details', {
+            'fields': ('session', 'reminder_type', 'reminder_time')
+        }),
+        ('Status', {
+            'fields': ('sent', 'sent_at', 'is_due_display')
+        }),
+        ('Timestamps', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def is_due_display(self, obj):
+        """Display if reminder is due"""
+        return "Yes" if obj.is_due else "No"
+    is_due_display.short_description = "Is Due"
+    is_due_display.boolean = True

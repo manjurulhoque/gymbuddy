@@ -5,7 +5,11 @@ from .views import (
     AssignmentListView, AssignmentCreateView, AssignmentUpdateView, AssignmentDeleteView,
     TrainerTraineesView, TraineeTrainerView,
     CheckInView, CheckOutView, AttendanceCheckInView, AttendanceHistoryView,
-    AttendanceStatisticsView, TrainerMarkAttendanceView, BulkAttendanceMarkView
+    AttendanceStatisticsView, TrainerMarkAttendanceView, BulkAttendanceMarkView,
+    TrainerAvailabilityListView, TrainerAvailabilityCreateView, TrainerAvailabilityUpdateView, TrainerAvailabilityDeleteView,
+    TrainingSessionListView, TrainingSessionCreateView, TrainingSessionUpdateView, TrainingSessionDeleteView, TrainingSessionCancelView,
+    CalendarView,
+    SessionReminderListView, SessionReminderCreateView, SessionReminderDeleteView
 )
 
 app_name = 'users'
@@ -36,5 +40,19 @@ urlpatterns = [
     path('attendance/statistics/', AttendanceStatisticsView.as_view(), name='attendance_statistics'),
     path('attendance/trainer/mark/', TrainerMarkAttendanceView.as_view(), name='trainer_mark_attendance'),
     path('attendance/bulk-mark/', BulkAttendanceMarkView.as_view(), name='bulk_attendance_mark'),
+    # Scheduling URLs
+    path('availability/', TrainerAvailabilityListView.as_view(), name='trainer_availability_list'),
+    path('availability/create/', TrainerAvailabilityCreateView.as_view(), name='trainer_availability_create'),
+    path('availability/<int:pk>/update/', TrainerAvailabilityUpdateView.as_view(), name='trainer_availability_update'),
+    path('availability/<int:pk>/delete/', TrainerAvailabilityDeleteView.as_view(), name='trainer_availability_delete'),
+    path('sessions/', TrainingSessionListView.as_view(), name='training_session_list'),
+    path('sessions/create/', TrainingSessionCreateView.as_view(), name='training_session_create'),
+    path('sessions/<int:pk>/update/', TrainingSessionUpdateView.as_view(), name='training_session_update'),
+    path('sessions/<int:pk>/delete/', TrainingSessionDeleteView.as_view(), name='training_session_delete'),
+    path('sessions/cancel/', TrainingSessionCancelView.as_view(), name='training_session_cancel'),
+    path('calendar/', CalendarView.as_view(), name='calendar'),
+    path('reminders/', SessionReminderListView.as_view(), name='session_reminder_list'),
+    path('reminders/create/', SessionReminderCreateView.as_view(), name='session_reminder_create'),
+    path('reminders/<int:pk>/delete/', SessionReminderDeleteView.as_view(), name='session_reminder_delete'),
 ]
 

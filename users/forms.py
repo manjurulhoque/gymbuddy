@@ -1,6 +1,9 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
-from .models import User, TrainerTraineeAssignment
+from django.db import models
+from django.utils import timezone
+from datetime import datetime, timedelta, time
+from .models import User, TrainerTraineeAssignment, TrainerAvailability, TrainingSession, SessionReminder
 
 
 class UserForm(UserCreationForm):
@@ -366,3 +369,243 @@ class BulkAttendanceForm(forms.Form):
         
         if queryset is not None:
             self.fields['trainees'].queryset = queryset
+
+
+# Scheduling Forms
+
+class TrainerAvailabilityForm(forms.ModelForm):
+    """Form for creating and updating trainer availability."""
+    
+    day_of_week = forms.ChoiceField(
+        choices=TrainerAvailability.DayOfWeek.choices,
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500'
+        }),
+        help_text="Select day of the week"
+    )
+    start_time = forms.TimeField(
+        required=True,
+        widget=forms.TimeInput(attrs={
+            'class': 'w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500',
+            'type': 'time'
+        }),
+        help_text="Start time"
+    )
+    end_time = forms.TimeField(
+        required=True,
+        widget=forms.TimeInput(attrs={
+            'class': 'w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500',
+            'type': 'time'
+        }),
+        help_text="End time"
+    )
+    is_available = forms.BooleanField(
+        required=False,
+        initial=True,
+        widget=forms.CheckboxInput(attrs={
+            'class': 'w-4 h-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500'
+        })
+    )
+
+    class Meta:
+        model = TrainerAvailability
+        fields = ('day_of_week', 'start_time', 'end_time', 'is_available')
+
+    def __init__(self, *args, **kwargs):
+        trainer = kwargs.pop('trainer', None)
+        super().__init__(*args, **kwargs)
+        if trainer:
+            self.instance.trainer = trainer
+
+    def clean(self):
+        cleaned_data = super().clean()
+        start_time = cleaned_data.get('start_time')
+        end_time = cleaned_data.get('end_time')
+        
+        if start_time and end_time:
+            if start_time >= end_time:
+                raise forms.ValidationError("End time must be after start time.")
+        
+        return cleaned_data
+
+
+class TrainingSessionForm(forms.ModelForm):
+    """Form for creating and updating training sessions."""
+    
+    trainer = forms.ModelChoiceField(
+        queryset=User.objects.filter(role=User.Role.TRAINER, is_active=True),
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500'
+        }),
+        help_text="Select a trainer"
+    )
+    trainee = forms.ModelChoiceField(
+        queryset=User.objects.filter(role=User.Role.TRAINEE, is_active=True),
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500'
+        }),
+        help_text="Select a trainee"
+    )
+    session_date = forms.DateField(
+        required=True,
+        widget=forms.DateInput(attrs={
+            'class': 'w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500',
+            'type': 'date',
+            'min': timezone.now().date().isoformat()
+        }),
+        help_text="Date of the session"
+    )
+    start_time = forms.TimeField(
+        required=True,
+        widget=forms.TimeInput(attrs={
+            'class': 'w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500',
+            'type': 'time'
+        }),
+        help_text="Start time"
+    )
+    end_time = forms.TimeField(
+        required=True,
+        widget=forms.TimeInput(attrs={
+            'class': 'w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500',
+            'type': 'time'
+        }),
+        help_text="End time"
+    )
+    status = forms.ChoiceField(
+        choices=TrainingSession.Status.choices,
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500'
+        })
+    )
+    notes = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            'class': 'w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500',
+            'rows': 4,
+            'placeholder': 'Optional notes about this session...'
+        })
+    )
+
+    class Meta:
+        model = TrainingSession
+        fields = ('trainer', 'trainee', 'session_date', 'start_time', 'end_time', 'status', 'notes')
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        
+        # If user is a trainee, limit to their assigned trainer
+        if user and user.is_trainee():
+            assignment = TrainerTraineeAssignment.objects.filter(
+                trainee=user,
+                is_active=True
+            ).first()
+            if assignment:
+                self.fields['trainer'].queryset = User.objects.filter(id=assignment.trainer_id, is_active=True)
+                self.fields['trainer'].initial = assignment.trainer
+                self.fields['trainee'].initial = user
+                self.fields['trainee'].widget.attrs['readonly'] = True
+            else:
+                self.fields['trainer'].queryset = User.objects.none()
+        
+        # If user is a trainer, limit to their assigned trainees
+        elif user and user.is_trainer():
+            trainee_ids = TrainerTraineeAssignment.objects.filter(
+                trainer=user,
+                is_active=True
+            ).values_list('trainee_id', flat=True)
+            self.fields['trainer'].initial = user
+            self.fields['trainer'].widget.attrs['readonly'] = True
+            self.fields['trainee'].queryset = User.objects.filter(id__in=trainee_ids, is_active=True)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        session_date = cleaned_data.get('session_date')
+        start_time = cleaned_data.get('start_time')
+        end_time = cleaned_data.get('end_time')
+        trainer = cleaned_data.get('trainer')
+        
+        if session_date and start_time and end_time:
+            # Check if date is in the past
+            if session_date < timezone.now().date():
+                raise forms.ValidationError("Session date cannot be in the past.")
+            
+            # Check if end time is after start time
+            if start_time >= end_time:
+                raise forms.ValidationError("End time must be after start time.")
+            
+            # Check for overlapping sessions
+            if trainer:
+                session_datetime_start = timezone.make_aware(
+                    datetime.combine(session_date, start_time)
+                )
+                session_datetime_end = timezone.make_aware(
+                    datetime.combine(session_date, end_time)
+                )
+                
+                overlapping = TrainingSession.objects.filter(
+                    trainer=trainer,
+                    session_date=session_date,
+                    status__in=[TrainingSession.Status.SCHEDULED, TrainingSession.Status.CONFIRMED, TrainingSession.Status.IN_PROGRESS]
+                ).exclude(
+                    pk=self.instance.pk if self.instance.pk else None
+                ).filter(
+                    models.Q(start_time__lt=end_time, end_time__gt=start_time)
+                )
+                
+                if overlapping.exists():
+                    raise forms.ValidationError(
+                        f"Trainer already has a session scheduled during this time. "
+                        f"Please choose a different time slot."
+                    )
+        
+        return cleaned_data
+
+
+class SessionReminderForm(forms.ModelForm):
+    """Form for creating session reminders."""
+    
+    reminder_type = forms.ChoiceField(
+        choices=SessionReminder.ReminderType.choices,
+        required=True,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500'
+        })
+    )
+    reminder_time = forms.DateTimeField(
+        required=True,
+        widget=forms.DateTimeInput(attrs={
+            'class': 'w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500',
+            'type': 'datetime-local'
+        }),
+        help_text="When to send the reminder"
+    )
+
+    class Meta:
+        model = SessionReminder
+        fields = ('reminder_type', 'reminder_time')
+
+    def __init__(self, *args, **kwargs):
+        session = kwargs.pop('session', None)
+        super().__init__(*args, **kwargs)
+        if session:
+            self.instance.session = session
+            # Set default reminder time to 1 hour before session
+            if session.session_datetime_start:
+                default_time = session.session_datetime_start - timedelta(hours=1)
+                self.fields['reminder_time'].initial = default_time
+
+    def clean(self):
+        cleaned_data = super().clean()
+        reminder_time = cleaned_data.get('reminder_time')
+        session = self.instance.session if hasattr(self.instance, 'session') else None
+        
+        if reminder_time and session:
+            if reminder_time >= session.session_datetime_start:
+                raise forms.ValidationError("Reminder time must be before the session start time.")
+        
+        return cleaned_data

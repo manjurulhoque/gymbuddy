@@ -12,8 +12,12 @@ from django.http import JsonResponse
 from django.utils import timezone
 from datetime import datetime, timedelta
 from django.db.models import Count, Q, Avg, Sum
-from .models import User, TrainerTraineeAssignment, Attendance
-from .forms import UserForm, UserUpdateForm, ProfileForm, ProfilePasswordChangeForm, TrainerTraineeAssignmentForm, BulkAttendanceForm
+from .models import User, TrainerTraineeAssignment, Attendance, TrainerAvailability, TrainingSession, SessionReminder
+from .forms import (
+    UserForm, UserUpdateForm, ProfileForm, ProfilePasswordChangeForm, 
+    TrainerTraineeAssignmentForm, BulkAttendanceForm,
+    TrainerAvailabilityForm, TrainingSessionForm, SessionReminderForm
+)
 from .mixins import StaffOrAboveRequiredMixin, SuperAdminOrOwnerRequiredMixin
 
 
@@ -952,3 +956,486 @@ class BulkAttendanceMarkView(LoginRequiredMixin, FormView):
                 messages.info(self.request, f'... and {len(error_messages) - 10} more messages.')
         
         return redirect('users:bulk_attendance_mark')
+
+
+# Scheduling Views
+
+class TrainerAvailabilityListView(LoginRequiredMixin, ListView):
+    """List view for trainer availability."""
+    model = TrainerAvailability
+    template_name = "users/trainer_availability_list.html"
+    context_object_name = "availabilities"
+    paginate_by = 20
+    login_url = "users:login"
+
+    def get_queryset(self):
+        user = self.request.user
+        
+        if user.is_trainer():
+            # Trainers see their own availability
+            queryset = TrainerAvailability.objects.filter(trainer=user)
+        elif user.is_trainee():
+            # Trainees see their assigned trainer's availability
+            assignment = TrainerTraineeAssignment.objects.filter(
+                trainee=user,
+                is_active=True
+            ).first()
+            if assignment:
+                queryset = TrainerAvailability.objects.filter(
+                    trainer=assignment.trainer,
+                    is_available=True
+                )
+            else:
+                queryset = TrainerAvailability.objects.none()
+        else:
+            # Staff see all availability
+            queryset = TrainerAvailability.objects.all()
+        
+        # Filter by trainer if provided
+        trainer_id = self.request.GET.get('trainer')
+        if trainer_id:
+            queryset = queryset.filter(trainer_id=trainer_id)
+        
+        # Filter by day of week if provided
+        day_of_week = self.request.GET.get('day_of_week')
+        if day_of_week:
+            queryset = queryset.filter(day_of_week=day_of_week)
+        
+        return queryset.select_related('trainer').order_by('trainer', 'day_of_week', 'start_time')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['trainer_filter'] = self.request.GET.get('trainer', '')
+        context['day_filter'] = self.request.GET.get('day_of_week', '')
+        context['is_trainer'] = self.request.user.is_trainer()
+        context['is_trainee'] = self.request.user.is_trainee()
+        
+        # Get available trainers for filter
+        if self.request.user.is_staff_or_above():
+            context['trainers'] = User.objects.filter(role=User.Role.TRAINER, is_active=True)
+        
+        return context
+
+
+class TrainerAvailabilityCreateView(LoginRequiredMixin, CreateView):
+    """Create view for trainer availability."""
+    model = TrainerAvailability
+    form_class = TrainerAvailabilityForm
+    template_name = "users/trainer_availability_form.html"
+    login_url = "users:login"
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_trainer():
+            messages.error(request, 'Only trainers can manage their availability.')
+            return redirect('users:trainer_availability_list')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['trainer'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        availability = form.save(commit=False)
+        availability.trainer = self.request.user
+        availability.save()
+        messages.success(self.request, 'Availability slot created successfully!')
+        return redirect('users:trainer_availability_list')
+
+    def get_success_url(self):
+        return reverse_lazy('users:trainer_availability_list')
+
+
+class TrainerAvailabilityUpdateView(LoginRequiredMixin, UpdateView):
+    """Update view for trainer availability."""
+    model = TrainerAvailability
+    form_class = TrainerAvailabilityForm
+    template_name = "users/trainer_availability_form.html"
+    login_url = "users:login"
+
+    def dispatch(self, request, *args, **kwargs):
+        availability = self.get_object()
+        if not request.user.is_trainer() or availability.trainer != request.user:
+            messages.error(request, 'You can only edit your own availability.')
+            return redirect('users:trainer_availability_list')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['trainer'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Availability updated successfully!')
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('users:trainer_availability_list')
+
+
+class TrainerAvailabilityDeleteView(LoginRequiredMixin, DeleteView):
+    """Delete view for trainer availability."""
+    model = TrainerAvailability
+    template_name = "users/trainer_availability_confirm_delete.html"
+    login_url = "users:login"
+
+    def dispatch(self, request, *args, **kwargs):
+        availability = self.get_object()
+        if not request.user.is_trainer() or availability.trainer != request.user:
+            messages.error(request, 'You can only delete your own availability.')
+            return redirect('users:trainer_availability_list')
+        return super().dispatch(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        availability = self.get_object()
+        availability.delete()
+        messages.success(request, 'Availability slot deleted successfully!')
+        return redirect('users:trainer_availability_list')
+
+    def get_success_url(self):
+        return reverse_lazy('users:trainer_availability_list')
+
+
+class TrainingSessionListView(LoginRequiredMixin, ListView):
+    """List view for training sessions."""
+    model = TrainingSession
+    template_name = "users/training_session_list.html"
+    context_object_name = "sessions"
+    paginate_by = 20
+    login_url = "users:login"
+
+    def get_queryset(self):
+        user = self.request.user
+        
+        if user.is_trainee():
+            # Trainees see their own sessions
+            queryset = TrainingSession.objects.filter(trainee=user)
+        elif user.is_trainer():
+            # Trainers see sessions with their assigned trainees
+            queryset = TrainingSession.objects.filter(trainer=user)
+        else:
+            # Staff see all sessions
+            queryset = TrainingSession.objects.all()
+        
+        # Filter by status
+        status_filter = self.request.GET.get('status', '')
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+        
+        # Filter by date range
+        date_from = self.request.GET.get('date_from')
+        date_to = self.request.GET.get('date_to')
+        if date_from:
+            queryset = queryset.filter(session_date__gte=date_from)
+        if date_to:
+            queryset = queryset.filter(session_date__lte=date_to)
+        
+        return queryset.select_related('trainer', 'trainee', 'created_by').order_by('-session_date', '-start_time')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['status_filter'] = self.request.GET.get('status', '')
+        context['date_from'] = self.request.GET.get('date_from', '')
+        context['date_to'] = self.request.GET.get('date_to', '')
+        context['is_trainer'] = self.request.user.is_trainer()
+        context['is_trainee'] = self.request.user.is_trainee()
+        return context
+
+
+class TrainingSessionCreateView(LoginRequiredMixin, CreateView):
+    """Create view for training sessions."""
+    model = TrainingSession
+    form_class = TrainingSessionForm
+    template_name = "users/training_session_form.html"
+    login_url = "users:login"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        session = form.save(commit=False)
+        session.created_by = self.request.user
+        session.save()
+        messages.success(self.request, 'Training session booked successfully!')
+        return redirect('users:training_session_list')
+
+    def get_success_url(self):
+        return reverse_lazy('users:training_session_list')
+
+
+class TrainingSessionUpdateView(LoginRequiredMixin, UpdateView):
+    """Update view for training sessions."""
+    model = TrainingSession
+    form_class = TrainingSessionForm
+    template_name = "users/training_session_form.html"
+    login_url = "users:login"
+
+    def dispatch(self, request, *args, **kwargs):
+        session = self.get_object()
+        # Allow trainers, trainees, and staff to update
+        if not (request.user == session.trainer or request.user == session.trainee or request.user.is_staff_or_above()):
+            messages.error(request, 'You do not have permission to edit this session.')
+            return redirect('users:training_session_list')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Training session updated successfully!')
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('users:training_session_list')
+
+
+class TrainingSessionDeleteView(LoginRequiredMixin, DeleteView):
+    """Delete view for training sessions."""
+    model = TrainingSession
+    template_name = "users/training_session_confirm_delete.html"
+    login_url = "users:login"
+
+    def dispatch(self, request, *args, **kwargs):
+        session = self.get_object()
+        # Allow trainers, trainees, and staff to delete
+        if not (request.user == session.trainer or request.user == session.trainee or request.user.is_staff_or_above()):
+            messages.error(request, 'You do not have permission to delete this session.')
+            return redirect('users:training_session_list')
+        return super().dispatch(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        session = self.get_object()
+        session.delete()
+        messages.success(request, 'Training session deleted successfully!')
+        return redirect('users:training_session_list')
+
+    def get_success_url(self):
+        return reverse_lazy('users:training_session_list')
+
+
+class TrainingSessionCancelView(LoginRequiredMixin, View):
+    """View to cancel a training session."""
+    login_url = "users:login"
+
+    def post(self, request, *args, **kwargs):
+        session_id = request.POST.get('session_id')
+        reason = request.POST.get('reason', '')
+        
+        try:
+            session = TrainingSession.objects.get(pk=session_id)
+        except TrainingSession.DoesNotExist:
+            messages.error(request, 'Session not found.')
+            return redirect('users:training_session_list')
+        
+        # Check permissions
+        if not (request.user == session.trainer or request.user == session.trainee or request.user.is_staff_or_above()):
+            messages.error(request, 'You do not have permission to cancel this session.')
+            return redirect('users:training_session_list')
+        
+        # Cancel the session
+        session.status = TrainingSession.Status.CANCELLED
+        session.cancelled_at = timezone.now()
+        session.cancelled_by = request.user
+        session.cancellation_reason = reason
+        session.save()
+        
+        messages.success(request, 'Training session cancelled successfully!')
+        return redirect('users:training_session_list')
+
+
+class CalendarView(LoginRequiredMixin, TemplateView):
+    """Calendar view for training sessions."""
+    template_name = "users/calendar.html"
+    login_url = "users:login"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # Get date range (current month by default)
+        year = int(self.request.GET.get('year', timezone.now().year))
+        month = int(self.request.GET.get('month', timezone.now().month))
+        
+        # Get sessions for the month
+        if user.is_trainee():
+            sessions = TrainingSession.objects.filter(
+                trainee=user,
+                session_date__year=year,
+                session_date__month=month
+            )
+        elif user.is_trainer():
+            sessions = TrainingSession.objects.filter(
+                trainer=user,
+                session_date__year=year,
+                session_date__month=month
+            )
+        else:
+            sessions = TrainingSession.objects.filter(
+                session_date__year=year,
+                session_date__month=month
+            )
+        
+        # Organize sessions by date
+        sessions_by_date = {}
+        for session in sessions.select_related('trainer', 'trainee'):
+            date_key = session.session_date.isoformat()
+            if date_key not in sessions_by_date:
+                sessions_by_date[date_key] = []
+            sessions_by_date[date_key].append(session)
+        
+        # Generate calendar days
+        from calendar import monthcalendar
+        import calendar
+        cal = monthcalendar(year, month)
+        calendar_days = []
+        for week in cal:
+            week_days = []
+            for day in week:
+                if day == 0:
+                    week_days.append(None)
+                else:
+                    date_key = f"{year}-{month:02d}-{day:02d}"
+                    day_sessions = sessions_by_date.get(date_key, [])
+                    week_days.append({
+                        'day': day,
+                        'date': date_key,
+                        'sessions': day_sessions,
+                        'is_today': date_key == current_date.isoformat()
+                    })
+            calendar_days.append(week_days)
+        
+        context['calendar_days'] = calendar_days
+        context['month_name'] = calendar.month_name[month]
+        
+        context['sessions_by_date'] = sessions_by_date
+        context['year'] = year
+        context['month'] = month
+        context['current_date'] = timezone.now().date()
+        
+        # Calculate previous and next month
+        if month == 1:
+            prev_month = 12
+            prev_year = year - 1
+        else:
+            prev_month = month - 1
+            prev_year = year
+        
+        if month == 12:
+            next_month = 1
+            next_year = year + 1
+        else:
+            next_month = month + 1
+            next_year = year
+        
+        context['prev_month'] = prev_month
+        context['prev_year'] = prev_year
+        context['next_month'] = next_month
+        context['next_year'] = next_year
+        
+        return context
+
+
+class SessionReminderListView(LoginRequiredMixin, ListView):
+    """List view for session reminders."""
+    model = SessionReminder
+    template_name = "users/session_reminder_list.html"
+    context_object_name = "reminders"
+    paginate_by = 20
+    login_url = "users:login"
+
+    def get_queryset(self):
+        user = self.request.user
+        
+        if user.is_trainee():
+            # Trainees see reminders for their sessions
+            session_ids = TrainingSession.objects.filter(trainee=user).values_list('id', flat=True)
+            queryset = SessionReminder.objects.filter(session_id__in=session_ids)
+        elif user.is_trainer():
+            # Trainers see reminders for their sessions
+            session_ids = TrainingSession.objects.filter(trainer=user).values_list('id', flat=True)
+            queryset = SessionReminder.objects.filter(session_id__in=session_ids)
+        else:
+            # Staff see all reminders
+            queryset = SessionReminder.objects.all()
+        
+        return queryset.select_related('session', 'session__trainer', 'session__trainee').order_by('reminder_time')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_trainer'] = self.request.user.is_trainer()
+        context['is_trainee'] = self.request.user.is_trainee()
+        return context
+
+
+class SessionReminderCreateView(LoginRequiredMixin, CreateView):
+    """Create view for session reminders."""
+    model = SessionReminder
+    form_class = SessionReminderForm
+    template_name = "users/session_reminder_form.html"
+    login_url = "users:login"
+
+    def dispatch(self, request, *args, **kwargs):
+        session_id = request.GET.get('session')
+        if not session_id:
+            messages.error(request, 'Please select a session.')
+            return redirect('users:training_session_list')
+        
+        try:
+            session = TrainingSession.objects.get(pk=session_id)
+        except TrainingSession.DoesNotExist:
+            messages.error(request, 'Session not found.')
+            return redirect('users:training_session_list')
+        
+        # Check permissions
+        if not (request.user == session.trainer or request.user == session.trainee or request.user.is_staff_or_above()):
+            messages.error(request, 'You do not have permission to create reminders for this session.')
+            return redirect('users:training_session_list')
+        
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        session_id = self.request.GET.get('session')
+        session = TrainingSession.objects.get(pk=session_id)
+        kwargs['session'] = session
+        return kwargs
+
+    def form_valid(self, form):
+        reminder = form.save(commit=False)
+        session_id = self.request.GET.get('session')
+        reminder.session = TrainingSession.objects.get(pk=session_id)
+        reminder.save()
+        messages.success(self.request, 'Reminder created successfully!')
+        return redirect('users:session_reminder_list')
+
+    def get_success_url(self):
+        return reverse_lazy('users:session_reminder_list')
+
+
+class SessionReminderDeleteView(LoginRequiredMixin, DeleteView):
+    """Delete view for session reminders."""
+    model = SessionReminder
+    template_name = "users/session_reminder_confirm_delete.html"
+    login_url = "users:login"
+
+    def dispatch(self, request, *args, **kwargs):
+        reminder = self.get_object()
+        session = reminder.session
+        # Check permissions
+        if not (request.user == session.trainer or request.user == session.trainee or request.user.is_staff_or_above()):
+            messages.error(request, 'You do not have permission to delete this reminder.')
+            return redirect('users:session_reminder_list')
+        return super().dispatch(request, *args, **kwargs)
+
+    def delete(self, request, *args, **kwargs):
+        reminder = self.get_object()
+        reminder.delete()
+        messages.success(request, 'Reminder deleted successfully!')
+        return redirect('users:session_reminder_list')
+
+    def get_success_url(self):
+        return reverse_lazy('users:session_reminder_list')
