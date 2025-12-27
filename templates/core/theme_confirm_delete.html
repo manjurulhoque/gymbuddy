@@ -1,0 +1,89 @@
+{% extends "dashboard/base.html" %}
+{% load theme_tags %}
+
+{% block title %}Delete Theme - GymBuddy{% endblock %}
+
+{% block page_title %}Delete Theme{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+        <div class="mb-6">
+            <div class="flex items-center space-x-4 mb-4">
+                <div class="w-16 h-16 rounded-lg" style="background: linear-gradient(135deg, {{ theme.primary_color }}, {{ theme.secondary_color }});"></div>
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900">{{ theme.name }}</h2>
+                    {% if theme.description %}
+                    <p class="text-slate-600 mt-1">{{ theme.description }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <div class="flex items-start">
+                    <svg class="w-6 h-6 text-red-600 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <div>
+                        <h3 class="text-sm font-semibold text-red-800 mb-1">Warning: This action cannot be undone</h3>
+                        <p class="text-sm text-red-700">
+                            Are you sure you want to delete the theme "{{ theme.name }}"? 
+                            {% if theme.is_default %}
+                            <strong>This is the default theme.</strong> Make sure to set another theme as default before deleting.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Theme Info -->
+            <div class="bg-slate-50 rounded-lg p-4 mb-6">
+                <h4 class="text-sm font-semibold text-slate-900 mb-3">Theme Details</h4>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                        <span class="text-slate-600">Status:</span>
+                        <span class="ml-2 font-medium">
+                            {% if theme.is_active %}
+                            <span class="text-green-600">Active</span>
+                            {% else %}
+                            <span class="text-gray-600">Inactive</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="text-slate-600">Default:</span>
+                        <span class="ml-2 font-medium">
+                            {% if theme.is_default %}
+                            <span class="text-blue-600">Yes</span>
+                            {% else %}
+                            <span class="text-gray-600">No</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div>
+                        <span class="text-slate-600">Tailwind:</span>
+                        <span class="ml-2 font-mono text-xs">{{ theme.primary_tailwind }} / {{ theme.secondary_tailwind }}</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-600">Created:</span>
+                        <span class="ml-2">{{ theme.created_at|date:"M d, Y" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <div class="flex justify-end space-x-4 pt-4 border-t border-slate-200">
+                <a href="{% url 'core:theme_manage_list' %}" class="px-4 py-2 text-slate-700 hover:text-slate-900 font-medium transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="px-6 py-2 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition-colors">
+                    Delete Theme
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

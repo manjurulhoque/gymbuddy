@@ -1,0 +1,213 @@
+[
+  {
+    "model": "core.theme",
+    "pk": 1,
+    "fields": {
+      "name": "Emerald",
+      "slug": "emerald",
+      "is_default": true,
+      "is_active": true,
+      "primary_color": "#10b981",
+      "primary_color_dark": "#059669",
+      "primary_color_light": "#34d399",
+      "secondary_color": "#14b8a6",
+      "secondary_color_dark": "#0d9488",
+      "secondary_color_light": "#5eead4",
+      "primary_tailwind": "emerald",
+      "secondary_tailwind": "teal",
+      "description": "Fresh and vibrant emerald green theme with teal accents. Perfect for fitness and wellness applications.",
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "core.theme",
+    "pk": 2,
+    "fields": {
+      "name": "Blue",
+      "slug": "blue",
+      "is_default": false,
+      "is_active": true,
+      "primary_color": "#3b82f6",
+      "primary_color_dark": "#2563eb",
+      "primary_color_light": "#60a5fa",
+      "secondary_color": "#06b6d4",
+      "secondary_color_dark": "#0891b2",
+      "secondary_color_light": "#22d3ee",
+      "primary_tailwind": "blue",
+      "secondary_tailwind": "cyan",
+      "description": "Professional blue theme with cyan accents. Great for corporate and professional applications.",
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "core.theme",
+    "pk": 3,
+    "fields": {
+      "name": "Purple",
+      "slug": "purple",
+      "is_default": false,
+      "is_active": true,
+      "primary_color": "#8b5cf6",
+      "primary_color_dark": "#7c3aed",
+      "primary_color_light": "#a78bfa",
+      "secondary_color": "#a855f7",
+      "secondary_color_dark": "#9333ea",
+      "secondary_color_light": "#c084fc",
+      "primary_tailwind": "violet",
+      "secondary_tailwind": "purple",
+      "description": "Elegant purple and violet theme. Perfect for creative and modern applications.",
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "core.theme",
+    "pk": 4,
+    "fields": {
+      "name": "Orange",
+      "slug": "orange",
+      "is_default": false,
+      "is_active": true,
+      "primary_color": "#f97316",
+      "primary_color_dark": "#ea580c",
+      "primary_color_light": "#fb923c",
+      "secondary_color": "#f59e0b",
+      "secondary_color_dark": "#d97706",
+      "secondary_color_light": "#fbbf24",
+      "primary_tailwind": "orange",
+      "secondary_tailwind": "amber",
+      "description": "Energetic orange theme with amber accents. Great for dynamic and action-oriented applications.",
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "core.theme",
+    "pk": 5,
+    "fields": {
+      "name": "Rose",
+      "slug": "rose",
+      "is_default": false,
+      "is_active": true,
+      "primary_color": "#f43f5e",
+      "primary_color_dark": "#e11d48",
+      "primary_color_light": "#fb7185",
+      "secondary_color": "#ec4899",
+      "secondary_color_dark": "#db2777",
+      "secondary_color_light": "#f472b6",
+      "primary_tailwind": "rose",
+      "secondary_tailwind": "pink",
+      "description": "Warm rose theme with pink accents. Ideal for lifestyle and fashion applications.",
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "core.theme",
+    "pk": 6,
+    "fields": {
+      "name": "Indigo",
+      "slug": "indigo",
+      "is_default": false,
+      "is_active": true,
+      "primary_color": "#6366f1",
+      "primary_color_dark": "#4f46e5",
+      "primary_color_light": "#818cf8",
+      "secondary_color": "#8b5cf6",
+      "secondary_color_dark": "#7c3aed",
+      "secondary_color_light": "#a78bfa",
+      "primary_tailwind": "indigo",
+      "secondary_tailwind": "violet",
+      "description": "Deep indigo theme with violet accents. Professional and sophisticated color scheme.",
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "core.theme",
+    "pk": 7,
+    "fields": {
+      "name": "Sky",
+      "slug": "sky",
+      "is_default": false,
+      "is_active": true,
+      "primary_color": "#0ea5e9",
+      "primary_color_dark": "#0284c7",
+      "primary_color_light": "#38bdf8",
+      "secondary_color": "#06b6d4",
+      "secondary_color_dark": "#0891b2",
+      "secondary_color_light": "#22d3ee",
+      "primary_tailwind": "sky",
+      "secondary_tailwind": "cyan",
+      "description": "Bright sky blue theme with cyan accents. Fresh and modern color palette.",
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "core.theme",
+    "pk": 8,
+    "fields": {
+      "name": "Lime",
+      "slug": "lime",
+      "is_default": false,
+      "is_active": true,
+      "primary_color": "#84cc16",
+      "primary_color_dark": "#65a30d",
+      "primary_color_light": "#a3e635",
+      "secondary_color": "#10b981",
+      "secondary_color_dark": "#059669",
+      "secondary_color_light": "#34d399",
+      "primary_tailwind": "lime",
+      "secondary_tailwind": "emerald",
+      "description": "Vibrant lime green theme with emerald accents. Energetic and fresh color scheme.",
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "core.theme",
+    "pk": 9,
+    "fields": {
+      "name": "Red",
+      "slug": "red",
+      "is_default": false,
+      "is_active": true,
+      "primary_color": "#ef4444",
+      "primary_color_dark": "#dc2626",
+      "primary_color_light": "#f87171",
+      "secondary_color": "#f97316",
+      "secondary_color_dark": "#ea580c",
+      "secondary_color_light": "#fb923c",
+      "primary_tailwind": "red",
+      "secondary_tailwind": "orange",
+      "description": "Bold red theme with orange accents. Powerful and attention-grabbing color scheme.",
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "core.theme",
+    "pk": 10,
+    "fields": {
+      "name": "Slate",
+      "slug": "slate",
+      "is_default": false,
+      "is_active": true,
+      "primary_color": "#64748b",
+      "primary_color_dark": "#475569",
+      "primary_color_light": "#94a3b8",
+      "secondary_color": "#475569",
+      "secondary_color_dark": "#334155",
+      "secondary_color_light": "#64748b",
+      "primary_tailwind": "slate",
+      "secondary_tailwind": "slate",
+      "description": "Neutral slate gray theme. Minimalist and professional monochrome color scheme.",
+      "created_at": "2025-01-01T00:00:00Z",
+      "updated_at": "2025-01-01T00:00:00Z"
+    }
+  }
+]
+

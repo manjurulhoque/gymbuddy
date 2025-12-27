@@ -1,0 +1,205 @@
+{% extends "dashboard/base.html" %}
+{% load theme_tags %}
+
+{% block title %}{{ page_title }} - GymBuddy{% endblock %}
+
+{% block page_title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Basic Information -->
+            <div class="border-b border-slate-200 pb-6">
+                <h3 class="text-lg font-semibold text-slate-900 mb-4">Basic Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-2">
+                            Theme Name *
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.slug.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-2">
+                            Slug
+                        </label>
+                        {{ form.slug }}
+                        {% if form.slug.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.slug.errors.0 }}</p>
+                        {% endif %}
+                        <p class="mt-1 text-xs text-slate-500">Auto-generated from name if left empty</p>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-2">
+                        Description
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.description.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div class="mt-6 flex space-x-6">
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        {{ form.is_default }}
+                        <span class="text-sm font-medium text-slate-700">Set as Default Theme</span>
+                    </label>
+                    <label class="flex items-center space-x-2 cursor-pointer">
+                        {{ form.is_active }}
+                        <span class="text-sm font-medium text-slate-700">Active</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Primary Colors -->
+            <div class="border-b border-slate-200 pb-6">
+                <h3 class="text-lg font-semibold text-slate-900 mb-4">Primary Colors</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div>
+                        <label for="{{ form.primary_tailwind.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-2">
+                            Tailwind Name *
+                        </label>
+                        {{ form.primary_tailwind }}
+                        {% if form.primary_tailwind.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.primary_tailwind.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.primary_color.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-2">
+                            Base Color *
+                        </label>
+                        {{ form.primary_color }}
+                        {% if form.primary_color.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.primary_color.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.primary_color_dark.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-2">
+                            Dark Shade *
+                        </label>
+                        {{ form.primary_color_dark }}
+                        {% if form.primary_color_dark.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.primary_color_dark.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.primary_color_light.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-2">
+                            Light Shade *
+                        </label>
+                        {{ form.primary_color_light }}
+                        {% if form.primary_color_light.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.primary_color_light.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Secondary Colors -->
+            <div class="pb-6">
+                <h3 class="text-lg font-semibold text-slate-900 mb-4">Secondary Colors</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div>
+                        <label for="{{ form.secondary_tailwind.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-2">
+                            Tailwind Name *
+                        </label>
+                        {{ form.secondary_tailwind }}
+                        {% if form.secondary_tailwind.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.secondary_tailwind.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.secondary_color.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-2">
+                            Base Color *
+                        </label>
+                        {{ form.secondary_color }}
+                        {% if form.secondary_color.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.secondary_color.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.secondary_color_dark.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-2">
+                            Dark Shade *
+                        </label>
+                        {{ form.secondary_color_dark }}
+                        {% if form.secondary_color_dark.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.secondary_color_dark.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.secondary_color_light.id_for_label }}" class="block text-sm font-medium text-slate-700 mb-2">
+                            Light Shade *
+                        </label>
+                        {{ form.secondary_color_light }}
+                        {% if form.secondary_color_light.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.secondary_color_light.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Color Preview -->
+            {% if form.instance.pk %}
+            <div class="bg-slate-50 rounded-lg p-6 border border-slate-200">
+                <h4 class="text-sm font-semibold text-slate-900 mb-4">Color Preview</h4>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <p class="text-xs text-slate-600 mb-2">Primary Colors</p>
+                        <div class="flex space-x-2">
+                            <div class="w-16 h-16 rounded border border-slate-300" style="background-color: {{ form.instance.primary_color_light }};" title="Light"></div>
+                            <div class="w-16 h-16 rounded border border-slate-300" style="background-color: {{ form.instance.primary_color }};" title="Base"></div>
+                            <div class="w-16 h-16 rounded border border-slate-300" style="background-color: {{ form.instance.primary_color_dark }};" title="Dark"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-600 mb-2">Secondary Colors</p>
+                        <div class="flex space-x-2">
+                            <div class="w-16 h-16 rounded border border-slate-300" style="background-color: {{ form.instance.secondary_color_light }};" title="Light"></div>
+                            <div class="w-16 h-16 rounded border border-slate-300" style="background-color: {{ form.instance.secondary_color }};" title="Base"></div>
+                            <div class="w-16 h-16 rounded border border-slate-300" style="background-color: {{ form.instance.secondary_color_dark }};" title="Dark"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <p class="text-xs text-slate-600 mb-2">Gradient Preview</p>
+                    <div class="w-full h-24 rounded border border-slate-300" style="background: linear-gradient(135deg, {{ form.instance.primary_color }}, {{ form.instance.secondary_color }});"></div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Form Actions -->
+            <div class="flex justify-end space-x-4 pt-4 border-t border-slate-200">
+                <a href="{% url 'core:theme_manage_list' %}" class="px-4 py-2 text-slate-700 hover:text-slate-900 font-medium transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="px-6 py-2 bg-black text-white rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                    {{ submit_button_text }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Auto-generate slug from name
+document.addEventListener('DOMContentLoaded', function() {
+    const nameField = document.getElementById('{{ form.name.id_for_label }}');
+    const slugField = document.getElementById('{{ form.slug.id_for_label }}');
+    
+    if (nameField && slugField && !slugField.value) {
+        nameField.addEventListener('input', function() {
+            if (!slugField.value) {
+                slugField.value = nameField.value.toLowerCase()
+                    .replace(/[^a-z0-9]+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+
