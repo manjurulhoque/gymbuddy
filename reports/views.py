@@ -105,6 +105,7 @@ class MonthlyRevenueReportView(StaffOrAboveRequiredMixin, TemplateView):
             'plan_breakdown': plan_breakdown,
             'start_date': start_date,
             'end_date': end_date,
+            'months': range(1, 13),
         })
         
         return context
