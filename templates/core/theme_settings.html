@@ -1,0 +1,131 @@
+{% extends "dashboard/base.html" %}
+{% load theme_tags %}
+
+{% block title %}Theme Settings - GymBuddy{% endblock %}
+
+{% block page_title %}Theme Settings{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-slate-900 mb-2">Site Theme Settings</h2>
+            <p class="text-slate-600">Select the color theme for the entire site. This will be applied to all users across the application.</p>
+        </div>
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for theme in available_themes %}
+                <label class="relative cursor-pointer">
+                    <input 
+                        type="radio" 
+                        name="theme" 
+                        value="{{ theme.id }}" 
+                        {% if form.theme.value == theme.id|stringformat:"s" or not form.theme.value and theme.is_default %}checked{% endif %}
+                        class="sr-only peer"
+                    >
+                    <div class="border-2 rounded-lg p-4 transition-all duration-200 peer-checked:border-{% theme_class 'primary' '500' 'border' %} peer-checked:ring-2 peer-checked:ring-{% theme_class 'primary' '500' 'ring' %} peer-checked:ring-opacity-50 hover:border-{% theme_class 'primary' '400' 'border' %} hover:shadow-md">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-semibold text-slate-900">{{ theme.name }}</h3>
+                            {% if theme.is_default %}
+                            <span class="text-xs px-2 py-1 bg-slate-100 text-slate-600 rounded">Default</span>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Color Preview -->
+                        <div class="space-y-2 mb-3">
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 rounded" style="background: linear-gradient(135deg, {{ theme.primary_color }}, {{ theme.secondary_color }});"></div>
+                                <span class="text-sm text-slate-600">Primary</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-8 h-8 rounded" style="background-color: {{ theme.secondary_color }};"></div>
+                                <span class="text-sm text-slate-600">Secondary</span>
+                            </div>
+                        </div>
+                        
+                        {% if theme.description %}
+                        <p class="text-xs text-slate-500">{{ theme.description }}</p>
+                        {% endif %}
+                        
+                        <!-- Selected Indicator -->
+                        <div class="absolute top-2 right-2 hidden peer-checked:block">
+                            <svg class="w-6 h-6 text-{% theme_class 'primary' '500' 'text' %}" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                    </div>
+                </label>
+                {% endfor %}
+                
+                <!-- Default Theme Option -->
+                <label class="relative cursor-pointer">
+                    <input 
+                        type="radio" 
+                        name="theme" 
+                        value="" 
+                        {% if not form.theme.value %}checked{% endif %}
+                        class="sr-only peer"
+                    >
+                    <div class="border-2 rounded-lg p-4 transition-all duration-200 peer-checked:border-{% theme_class 'primary' '500' 'border' %} peer-checked:ring-2 peer-checked:ring-{% theme_class 'primary' '500' 'ring' %} peer-checked:ring-opacity-50 hover:border-{% theme_class 'primary' '400' 'border' %} hover:shadow-md">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-semibold text-slate-900">System Default</h3>
+                        </div>
+                        <p class="text-sm text-slate-600 mb-3">Use the default theme set by the system.</p>
+                        <div class="absolute top-2 right-2 hidden peer-checked:block">
+                            <svg class="w-6 h-6 text-{% theme_class 'primary' '500' 'text' %}" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                        </div>
+                    </div>
+                </label>
+            </div>
+
+            {% if form.theme.errors %}
+            <div class="text-red-600 text-sm">
+                {{ form.theme.errors }}
+            </div>
+            {% endif %}
+
+            <div class="flex justify-end space-x-4 pt-4 border-t border-slate-200">
+                <a href="{% url 'core:dashboard' %}" class="px-4 py-2 text-slate-700 hover:text-slate-900 font-medium transition-colors">
+                    Cancel
+                </a>
+                <button type="submit" class="px-6 py-2 bg-black text-white rounded-lg font-semibold hover:shadow-lg transform hover:scale-105 transition-all duration-200">
+                    Save Theme
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Current Theme Info -->
+    {% if current_theme %}
+    <div class="mt-6 bg-white rounded-lg shadow-sm border border-slate-200 p-6">
+        <h3 class="text-lg font-semibold text-slate-900 mb-4">Current Theme: {{ current_theme.name }}</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+                <p class="text-sm text-slate-600 mb-1">Primary Color</p>
+                <div class="w-full h-12 rounded" style="background-color: {{ current_theme.primary_color }};"></div>
+                <p class="text-xs text-slate-500 mt-1">{{ current_theme.primary_color }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-600 mb-1">Secondary Color</p>
+                <div class="w-full h-12 rounded" style="background-color: {{ current_theme.secondary_color }};"></div>
+                <p class="text-xs text-slate-500 mt-1">{{ current_theme.secondary_color }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-slate-600 mb-1">Gradient Preview</p>
+                <div class="w-full h-12 rounded" style="background: linear-gradient(135deg, {{ current_theme.primary_color }}, {{ current_theme.secondary_color }});"></div>
+            </div>
+            <div>
+                <p class="text-sm text-slate-600 mb-1">Tailwind Classes</p>
+                <p class="text-xs text-slate-700 font-mono">{{ current_theme.primary_tailwind }}-* / {{ current_theme.secondary_tailwind }}-*</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+

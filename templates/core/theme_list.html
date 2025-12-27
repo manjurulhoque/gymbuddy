@@ -1,0 +1,76 @@
+{% extends "dashboard/base.html" %}
+{% load theme_tags %}
+
+{% block title %}Available Themes - GymBuddy{% endblock %}
+
+{% block page_title %}Available Themes{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <div class="mb-6">
+        <a href="{% url 'core:theme_settings' %}" class="inline-flex items-center space-x-2 text-{% theme_class 'primary' '600' 'text' %} hover:text-{% theme_class 'primary' '700' 'text' %} font-medium">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+            <span>Back to Theme Settings</span>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for theme in themes %}
+        <div class="bg-white rounded-lg shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow duration-200">
+            <!-- Theme Preview Header -->
+            <div class="h-32" style="background: linear-gradient(135deg, {{ theme.primary_color }}, {{ theme.secondary_color }});"></div>
+            
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-slate-900">{{ theme.name }}</h3>
+                    {% if theme.is_default %}
+                    <span class="px-2 py-1 bg-{% theme_class 'primary' '100' 'bg' %} text-{% theme_class 'primary' '700' 'text' %} text-xs font-semibold rounded">Default</span>
+                    {% endif %}
+                </div>
+                
+                {% if theme.description %}
+                <p class="text-sm text-slate-600 mb-4">{{ theme.description }}</p>
+                {% endif %}
+                
+                <!-- Color Palette -->
+                <div class="space-y-3 mb-4">
+                    <div>
+                        <p class="text-xs text-slate-500 mb-1">Primary Colors</p>
+                        <div class="flex space-x-2">
+                            <div class="w-12 h-12 rounded" style="background-color: {{ theme.primary_color_light }};" title="Light"></div>
+                            <div class="w-12 h-12 rounded" style="background-color: {{ theme.primary_color }};" title="Base"></div>
+                            <div class="w-12 h-12 rounded" style="background-color: {{ theme.primary_color_dark }};" title="Dark"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs text-slate-500 mb-1">Secondary Colors</p>
+                        <div class="flex space-x-2">
+                            <div class="w-12 h-12 rounded" style="background-color: {{ theme.secondary_color_light }};" title="Light"></div>
+                            <div class="w-12 h-12 rounded" style="background-color: {{ theme.secondary_color }};" title="Base"></div>
+                            <div class="w-12 h-12 rounded" style="background-color: {{ theme.secondary_color_dark }};" title="Dark"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Theme Info -->
+                <div class="border-t border-slate-200 pt-4">
+                    <div class="flex items-center justify-between text-xs text-slate-500">
+                        <span>Tailwind: {{ theme.primary_tailwind }} / {{ theme.secondary_tailwind }}</span>
+                        {% if current_theme == theme %}
+                        <span class="px-2 py-1 bg-{% theme_class 'primary' '100' 'bg' %} text-{% theme_class 'primary' '700' 'text' %} rounded font-semibold">Active</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12">
+            <p class="text-slate-500">No themes available.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
