@@ -809,12 +809,7 @@ class BulkAttendanceMarkView(LoginRequiredMixin, FormView):
         
         # Get available trainees based on user role
         if user.is_staff_or_above():
-            if user.is_manager():
-                trainees = User.objects.filter(role=User.Role.TRAINEE, is_active=True)
-            elif user.is_owner():
-                trainees = User.objects.filter(role=User.Role.TRAINEE, is_active=True)
-            else:  # Super Admin
-                trainees = User.objects.filter(role=User.Role.TRAINEE, is_active=True)
+            trainees = User.objects.filter(role=User.Role.TRAINEE, is_active=True)
         else:
             # Get trainer's assigned trainees
             assignments = TrainerTraineeAssignment.objects.filter(
@@ -823,6 +818,23 @@ class BulkAttendanceMarkView(LoginRequiredMixin, FormView):
             ).select_related('trainee')
             trainee_ids = [assignment.trainee_id for assignment in assignments]
             trainees = User.objects.filter(id__in=trainee_ids, is_active=True)
+        
+        # On POST, if there are selected trainees, ensure they're in the queryset
+        if self.request.method == 'POST':
+            selected_ids = self.request.POST.getlist('trainees')
+            if selected_ids:
+                try:
+                    selected_ids_int = [int(id) for id in selected_ids if id.isdigit()]
+                    # Expand queryset to include selected trainees
+                    selected_trainees = User.objects.filter(
+                        id__in=selected_ids_int,
+                        role=User.Role.TRAINEE,
+                        is_active=True
+                    )
+                    # Combine querysets
+                    trainees = trainees | selected_trainees
+                except (ValueError, TypeError):
+                    pass  # Keep original queryset if parsing fails
         
         kwargs['queryset'] = trainees
         kwargs['user'] = user
@@ -877,9 +889,18 @@ class BulkAttendanceMarkView(LoginRequiredMixin, FormView):
         return context
 
     def form_valid(self, form):
-        trainees = form.cleaned_data['trainees']
-        action = form.cleaned_data['action']
+        trainees = form.cleaned_data.get('trainees', [])
+        action = form.cleaned_data.get('action')
         notes = form.cleaned_data.get('notes', '')
+        
+        # Validate that we have the required fields
+        if not trainees:
+            form.add_error('trainees', 'Please select at least one trainee.')
+            return self.form_invalid(form)
+        
+        if not action:
+            form.add_error('action', 'Please select an action.')
+            return self.form_invalid(form)
         
         user = self.request.user
         today = timezone.now().date()

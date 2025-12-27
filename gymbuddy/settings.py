@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     "core",
     "users",
     "memberships",
+    "reports",
     "mathfilters",
 ]
 

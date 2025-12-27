@@ -369,6 +369,40 @@ class BulkAttendanceForm(forms.Form):
         
         if queryset is not None:
             self.fields['trainees'].queryset = queryset
+        
+        # Store user for potential use
+        self.user = user
+    
+    def clean_trainees(self):
+        """Validate that at least one trainee is selected."""
+        trainees = self.cleaned_data.get('trainees')
+        if not trainees:
+            raise forms.ValidationError('Please select at least one trainee.')
+        return trainees
+    
+    def clean(self):
+        """Override clean to handle validation more gracefully."""
+        cleaned_data = super().clean()
+        
+        # If trainees validation failed but we have data in POST, try to recover
+        if 'trainees' not in cleaned_data and self.data:
+            trainee_ids = self.data.getlist('trainees')
+            if trainee_ids:
+                try:
+                    # Try to get the trainees directly
+                    trainees = User.objects.filter(
+                        id__in=[int(id) for id in trainee_ids if id.isdigit()],
+                        role=User.Role.TRAINEE,
+                        is_active=True
+                    )
+                    if trainees.exists():
+                        cleaned_data['trainees'] = trainees
+                    else:
+                        self.add_error('trainees', 'Please select at least one valid trainee.')
+                except (ValueError, TypeError):
+                    self.add_error('trainees', 'Invalid trainee selection.')
+        
+        return cleaned_data
 
 
 # Scheduling Forms
