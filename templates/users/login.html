@@ -11,24 +11,88 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
     <style>
+        :root {
+            --lime: #C8F135;
+            --lime-dark: #a8cf1e;
+            --black: #0e0e0e;
+            --dark: #141414;
+            --card: #1a1a1a;
+            --border: #2a2a2a;
+            --text: #e8e8e8;
+            --muted: #888;
+            --white: #ffffff;
+        }
         body {
             font-family: 'Inter', sans-serif;
         }
+        .login-page {
+            background: linear-gradient(135deg, var(--black), var(--dark) 50%, var(--black));
+        }
+        .glow-lime {
+            background: rgba(200, 241, 53, .16);
+        }
+        .glow-lime-soft {
+            background: rgba(200, 241, 53, .10);
+        }
+        .brand-badge {
+            background: linear-gradient(135deg, var(--lime), var(--lime-dark));
+            color: var(--black);
+        }
+        .login-card {
+            background: rgba(20, 20, 20, .78);
+            border: 1px solid rgba(200, 241, 53, .15);
+        }
+        .input-field {
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid rgba(200, 241, 53, .18);
+            color: var(--white);
+        }
+        .input-field::placeholder {
+            color: #9ca3af;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--lime);
+            box-shadow: 0 0 0 2px rgba(200, 241, 53, .28);
+        }
+        .remember-checkbox {
+            accent-color: var(--lime-dark);
+        }
+        .accent-link {
+            color: var(--lime);
+        }
+        .accent-link:hover {
+            color: var(--lime-dark);
+        }
+        .submit-btn {
+            background: linear-gradient(90deg, var(--lime), var(--lime-dark));
+            color: var(--black);
+        }
+        .submit-btn:hover {
+            filter: brightness(.95);
+        }
+        .success-message {
+            background: rgba(200, 241, 53, .12);
+            border-color: rgba(200, 241, 53, .35);
+        }
+        .success-message-text {
+            color: #d6f86a;
+        }
     </style>
 </head>
-<body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 min-h-screen flex items-center justify-center p-4">
+<body class="login-page min-h-screen flex items-center justify-center p-4">
     <!-- Background decorative elements -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
-        <div class="absolute top-0 left-1/4 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-teal-500/20 rounded-full blur-3xl"></div>
-        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-3xl"></div>
+        <div class="absolute top-0 left-1/4 w-96 h-96 glow-lime rounded-full blur-3xl"></div>
+        <div class="absolute bottom-0 right-1/4 w-96 h-96 glow-lime-soft rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] glow-lime-soft rounded-full blur-3xl"></div>
     </div>
 
     <div class="relative w-full max-w-md z-10">
         <!-- Logo and Header -->
         <div class="text-center mb-8">
                 <a href="{% url 'core:home' %}" class="inline-flex items-center space-x-3 mb-6 group">
-                <div class="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center transform group-hover:scale-105 transition-transform duration-200 shadow-lg">
+                <div class="w-14 h-14 brand-badge rounded-xl flex items-center justify-center transform group-hover:scale-105 transition-transform duration-200 shadow-lg">
                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                     </svg>
@@ -40,7 +104,7 @@
         </div>
 
         <!-- Login Card -->
-        <div class="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 p-8">
+        <div class="login-card backdrop-blur-xl rounded-2xl shadow-2xl p-8">
             <!-- Error Messages -->
             {% if form.errors %}
                 <div class="mb-6 p-4 bg-red-500/20 border border-red-500/50 rounded-lg">
@@ -59,12 +123,12 @@
             <!-- Success Messages -->
             {% if messages %}
                 {% for message in messages %}
-                    <div class="mb-6 p-4 bg-emerald-500/20 border border-emerald-500/50 rounded-lg">
+                    <div class="success-message mb-6 p-4 border rounded-lg">
                         <div class="flex items-center space-x-3">
-                            <svg class="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 success-message-text flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
-                            <p class="text-emerald-300">{{ message }}</p>
+                            <p class="success-message-text">{{ message }}</p>
                         </div>
                     </div>
                 {% endfor %}
@@ -90,7 +154,7 @@
                             id="id_username" 
                             autofocus
                             required
-                            class="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
+                            class="input-field w-full pl-12 pr-4 py-3 rounded-lg transition-all duration-200"
                             placeholder="Enter your username"
                         >
                     </div>
@@ -112,7 +176,7 @@
                             name="password" 
                             id="id_password" 
                             required
-                            class="w-full pl-12 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-200"
+                            class="input-field w-full pl-12 pr-4 py-3 rounded-lg transition-all duration-200"
                             placeholder="Enter your password"
                         >
                     </div>
@@ -124,11 +188,11 @@
                         <input 
                             type="checkbox" 
                             name="remember_me" 
-                            class="w-4 h-4 text-emerald-600 bg-white/10 border-white/20 rounded focus:ring-emerald-500 focus:ring-2"
+                            class="remember-checkbox w-4 h-4 bg-white/10 border-white/20 rounded"
                         >
                         <span class="ml-2 text-sm text-slate-300">Remember me</span>
                     </label>
-                    <a href="#" class="text-sm text-emerald-400 hover:text-emerald-300 font-medium transition-colors duration-200">
+                    <a href="#" class="accent-link text-sm font-medium transition-colors duration-200">
                         Forgot password?
                     </a>
                 </div>
@@ -136,7 +200,7 @@
                 <!-- Submit Button -->
                 <button 
                     type="submit" 
-                    class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white py-3.5 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 focus:ring-offset-slate-900"
+                    class="submit-btn w-full py-3.5 rounded-lg font-semibold text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 focus:outline-none"
                 >
                     Sign In
                 </button>
@@ -147,7 +211,7 @@
         <div class="mt-6 text-center">
             <p class="text-slate-400 text-sm">
                 Don't have an account? 
-                <a href="{% url 'core:home' %}" class="text-emerald-400 hover:text-emerald-300 font-medium transition-colors duration-200">
+                <a href="{% url 'core:home' %}" class="accent-link font-medium transition-colors duration-200">
                     Contact Admin
                 </a>
             </p>

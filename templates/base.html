@@ -19,6 +19,15 @@
             --theme-secondary: {{ active_theme.secondary_color|default:"#14b8a6" }};
             --theme-secondary-dark: {{ active_theme.secondary_color_dark|default:"#0d9488" }};
             --theme-secondary-light: {{ active_theme.secondary_color_light|default:"#5eead4" }};
+            --lime: #C8F135;
+            --lime-dark: #a8cf1e;
+            --black: #0e0e0e;
+            --dark: #141414;
+            --card: #1a1a1a;
+            --border: #2a2a2a;
+            --text: #e8e8e8;
+            --muted: #888;
+            --white: #ffffff;
         }
         body {
             font-family: 'Inter', sans-serif;
@@ -36,9 +45,41 @@
         .border-theme-primary { border-color: var(--theme-primary); }
         .hover\:text-theme-primary:hover { color: var(--theme-primary); }
         .hover\:bg-theme-primary:hover { background-color: var(--theme-primary); }
+        /* Compatibility layer: map old emerald/teal classes to theme palette */
+        .text-emerald-300, .text-emerald-400, .text-emerald-500, .text-emerald-600, .text-teal-500, .text-teal-600 {
+            color: var(--theme-primary);
+        }
+        .hover\:text-emerald-300:hover, .hover\:text-emerald-400:hover, .hover\:text-emerald-500:hover, .hover\:text-emerald-600:hover, .hover\:text-emerald-700:hover, .hover\:text-teal-600:hover, .hover\:text-teal-700:hover {
+            color: var(--theme-primary);
+        }
+        .bg-emerald-50, .bg-emerald-100, .bg-emerald-500, .bg-teal-500, .bg-teal-600 {
+            background-color: color-mix(in srgb, var(--theme-primary) 16%, white);
+        }
+        .border-emerald-200, .border-emerald-500, .border-teal-600 {
+            border-color: var(--theme-primary);
+        }
+        .from-emerald-500, .from-emerald-600 {
+            --tw-gradient-from: var(--theme-primary) var(--tw-gradient-from-position);
+            --tw-gradient-to: color-mix(in srgb, var(--theme-primary) 0%, transparent) var(--tw-gradient-to-position);
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+        }
+        .to-teal-600, .to-teal-700 {
+            --tw-gradient-to: var(--theme-secondary) var(--tw-gradient-to-position);
+        }
+        .hover\:from-emerald-600:hover {
+            --tw-gradient-from: var(--theme-primary-dark) var(--tw-gradient-from-position);
+            --tw-gradient-to: color-mix(in srgb, var(--theme-primary-dark) 0%, transparent) var(--tw-gradient-to-position);
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+        }
+        .hover\:to-teal-700:hover {
+            --tw-gradient-to: var(--theme-secondary-dark) var(--tw-gradient-to-position);
+        }
     </style>
+    {% block extra_head %}{% endblock %}
 </head>
-<body class="bg-slate-50 text-slate-900 antialiased">
+<body class="{% block body_class %}bg-slate-50 text-slate-900 antialiased{% endblock %}">
+    {% block pre_main %}{% endblock %}
+    {% block site_nav %}
     <!-- Navigation -->
     <nav class="bg-white shadow-sm sticky top-0 z-50 border-b border-slate-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -72,7 +113,7 @@
                             </div>
                             <form method="post" action="{% url 'users:logout' %}" class="inline">
                                 {% csrf_token %}
-                                <button type="submit" class="text-slate-700 hover:text-emerald-600 font-medium transition-colors duration-200">Logout</button>
+                                <button type="submit" class="text-slate-700 hover:text-theme-primary font-medium transition-colors duration-200">Logout</button>
                             </form>
                         </div>
                     {% else %}
@@ -105,19 +146,20 @@
                             <div class="w-8 h-8 bg-theme-gradient-br rounded-full flex items-center justify-center text-white text-sm font-semibold">
                                 {{ user.username|first|upper }}
                             </div>
-                            <span class="text-slate-700 font-medium">{{ user.get_full_name|default:user.username }}{% if user.role %} <span class="text-xs text-emerald-600">({{ user.get_role_display }})</span>{% endif %}</span>
+                            <span class="text-slate-700 font-medium">{{ user.get_full_name|default:user.username }}{% if user.role %} <span class="text-xs theme-primary">({{ user.get_role_display }})</span>{% endif %}</span>
                         </div>
                         <form method="post" action="{% url 'users:logout' %}" class="mt-2">
                             {% csrf_token %}
-                            <button type="submit" class="w-full px-3 py-2 text-slate-700 hover:text-emerald-600 hover:bg-slate-50 rounded-lg transition-colors duration-200 text-left">Logout</button>
+                            <button type="submit" class="w-full px-3 py-2 text-slate-700 hover:text-theme-primary hover:bg-slate-50 rounded-lg transition-colors duration-200 text-left">Logout</button>
                         </form>
                     </div>
                 {% else %}
-                    <a href="{% url 'users:login' %}" class="block px-3 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg font-semibold text-center mt-4">Sign In</a>
+                    <a href="{% url 'users:login' %}" class="block px-3 py-2 bg-theme-gradient text-white rounded-lg font-semibold text-center mt-4">Sign In</a>
                 {% endif %}
             </div>
         </div>
     </nav>
+    {% endblock %}
 
     <!-- Main Content -->
     <main class="min-h-screen">
@@ -125,6 +167,7 @@
         {% endblock %}
     </main>
 
+    {% block site_footer %}
     <!-- Footer -->
     <footer class="bg-slate-900 text-slate-300 mt-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -198,6 +241,7 @@
             </div>
         </div>
     </footer>
+    {% endblock %}
 
     <!-- Mobile Menu Script -->
     <script>
@@ -210,5 +254,6 @@
             });
         }
     </script>
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>
