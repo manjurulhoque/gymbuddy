@@ -145,6 +145,10 @@ python manage.py shell
 
 # Run tests
 python manage.py test
+
+# demo super-admin
+username: superadmin
+password: password123
 ```
 
 ## Technologies

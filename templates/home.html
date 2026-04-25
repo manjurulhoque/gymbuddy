@@ -45,18 +45,19 @@
         <li><a href="#testimonials">FAQ</a></li>
     </ul>
     {% if user.is_authenticated %}
-    <div class="nav-auth">
-        <div class="nav-user">
-            <div class="nav-avatar">{{ user.username|first|upper }}</div>
-            <span class="nav-username">{{ user.get_full_name|default:user.username }}{% if user.role %} <span class="nav-role">({{ user.get_role_display }})</span>{% endif %}</span>
+        <div class="nav-auth">
+            <div class="nav-user">
+                <div class="nav-avatar">{{ user.username|first|upper }}</div>
+                <span class="nav-username">{{ user.get_full_name|default:user.username }}{% if user.role %} <span class="nav-role">({{ user.get_role_display }})</span>{% endif %}</span>
+            </div>
+            <a href="{% url 'core:dashboard' %}" class="btn-dashboard">Dashboard</a>
+            <form method="post" action="{% url 'users:logout' %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="btn-logout">Logout</button>
+            </form>
         </div>
-        <form method="post" action="{% url 'users:logout' %}" class="inline">
-            {% csrf_token %}
-            <button type="submit" class="btn-logout">Logout</button>
-        </form>
-    </div>
     {% else %}
-    <a href="{% url 'users:login' %}" class="btn-login">Sign In</a>
+        <a href="{% url 'users:login' %}" class="btn-login">Sign In</a>
     {% endif %}
 </nav>
 
@@ -87,7 +88,8 @@
     <div class="hero-image">
         <div class="hero-img-placeholder"><span class="sparkle">✦</span><span class="sparkle">✦</span></div>
     </div>
-    <div class="social-sidebar"><a href="#">f</a><a href="#">in</a><a href="#">&#128038;</a><a href="#">&#128247;</a>
+    <div class="social-sidebar">
+        <a href="#">f</a><a href="#">in</a><a href="#">&#128038;</a><a href="#">&#128247;</a>
     </div>
 </section>
 
@@ -130,8 +132,10 @@
                 <div class="feature-icon">&#128101;</div>
                 <div>
                     <h4>Qualified Trainers</h4>
-                    <p>Our certified trainers are dedicated to your success, offering personalized guidance to match
-                        your fitness journey.</p>
+                    <p>
+                        Our certified trainers are dedicated to your success, offering personalized guidance to match
+                        your fitness journey.
+                    </p>
                 </div>
             </div>
             <div class="feature-item">
@@ -170,6 +174,8 @@
             </div>
         </div>
         <div class="testi-card reveal" style="transition-delay:.15s">
+            <div class="testi-video"></div>
+            <div class="testi-stars">★★★★★</div>
             <p class="testi-text">"This program changed the way I approach fitness. I used to dread workouts, but now
                 they're something I genuinely enjoy. The structure, the support, and the results have been incredible. I
                 feel stronger, healthier, and way more confident in my body."</p>
@@ -207,17 +213,17 @@
             <div class="plan-divider"></div>
             <ul class="plan-features">
                 {% for feature in plan.features %}
-                <li>{{ feature }}</li>
+                    <li>{{ feature }}</li>
                 {% endfor %}
             </ul>
             {% if user.is_authenticated %}
-            <a href="{% url 'memberships:user_subscribe' plan.id %}" class="btn-plan" style="display:block;text-align:center;text-decoration:none;">
-                {% if plan.name == 'PREMIUM' %}Get Started{% else %}Choose Plan{% endif %}
-            </a>
+                <a href="{% url 'memberships:user_subscribe' plan.id %}" class="btn-plan" style="display:block;text-align:center;text-decoration:none;">
+                    {% if plan.name == 'PREMIUM' %}Get Started{% else %}Choose Plan{% endif %}
+                </a>
             {% else %}
-            <a href="{% url 'users:login' %}?next={% url 'memberships:user_subscribe' plan.id %}" class="btn-plan" style="display:block;text-align:center;text-decoration:none;">
-                {% if plan.name == 'PREMIUM' %}Get Started{% else %}Choose Plan{% endif %}
-            </a>
+                <a href="{% url 'users:login' %}?next={% url 'memberships:user_subscribe' plan.id %}" class="btn-plan" style="display:block;text-align:center;text-decoration:none;">
+                    {% if plan.name == 'PREMIUM' %}Get Started{% else %}Choose Plan{% endif %}
+                </a>
             {% endif %}
         </div>
         {% empty %}
