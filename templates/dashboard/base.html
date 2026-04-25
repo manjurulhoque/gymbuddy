@@ -13,12 +13,12 @@
     <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
     <style>
         :root {
-            --theme-primary: {{ active_theme.primary_color|default:"#10b981" }};
-            --theme-primary-dark: {{ active_theme.primary_color_dark|default:"#059669" }};
-            --theme-primary-light: {{ active_theme.primary_color_light|default:"#34d399" }};
-            --theme-secondary: {{ active_theme.secondary_color|default:"#14b8a6" }};
-            --theme-secondary-dark: {{ active_theme.secondary_color_dark|default:"#0d9488" }};
-            --theme-secondary-light: {{ active_theme.secondary_color_light|default:"#5eead4" }};
+            --theme-primary: {{ active_theme.primary_color|default:"#C8F135" }};
+            --theme-primary-dark: {{ active_theme.primary_color_dark|default:"#a8cf1e" }};
+            --theme-primary-light: {{ active_theme.primary_color_light|default:"#d6f86a" }};
+            --theme-secondary: {{ active_theme.secondary_color|default:"#9bc11f" }};
+            --theme-secondary-dark: {{ active_theme.secondary_color_dark|default:"#7c9a18" }};
+            --theme-secondary-light: {{ active_theme.secondary_color_light|default:"#e3fb96" }};
         }
         body {
             font-family: 'Inter', sans-serif;
@@ -36,13 +36,42 @@
         .border-theme-primary { border-color: var(--theme-primary); }
         .hover\:text-theme-primary:hover { color: var(--theme-primary); }
         .hover\:bg-theme-primary:hover { background-color: var(--theme-primary); }
+        /* Compatibility layer: map old emerald/teal classes to theme palette */
+        .text-emerald-300, .text-emerald-400, .text-emerald-500, .text-emerald-600, .text-teal-500, .text-teal-600 {
+            color: var(--theme-primary);
+        }
+        .hover\:text-emerald-300:hover, .hover\:text-emerald-400:hover, .hover\:text-emerald-500:hover, .hover\:text-emerald-600:hover, .hover\:text-emerald-700:hover, .hover\:text-teal-600:hover, .hover\:text-teal-700:hover {
+            color: var(--theme-primary);
+        }
+        .bg-emerald-50, .bg-emerald-100, .bg-emerald-500, .bg-teal-500, .bg-teal-600 {
+            background-color: color-mix(in srgb, var(--theme-primary) 16%, white);
+        }
+        .border-emerald-200, .border-emerald-500, .border-teal-600 {
+            border-color: var(--theme-primary);
+        }
+        .from-emerald-500, .from-emerald-600 {
+            --tw-gradient-from: var(--theme-primary) var(--tw-gradient-from-position);
+            --tw-gradient-to: color-mix(in srgb, var(--theme-primary) 0%, transparent) var(--tw-gradient-to-position);
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+        }
+        .to-teal-600, .to-teal-700 {
+            --tw-gradient-to: var(--theme-secondary) var(--tw-gradient-to-position);
+        }
+        .hover\:from-emerald-600:hover {
+            --tw-gradient-from: var(--theme-primary-dark) var(--tw-gradient-from-position);
+            --tw-gradient-to: color-mix(in srgb, var(--theme-primary-dark) 0%, transparent) var(--tw-gradient-to-position);
+            --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+        }
+        .hover\:to-teal-700:hover {
+            --tw-gradient-to: var(--theme-secondary-dark) var(--tw-gradient-to-position);
+        }
         /* Smooth sidebar transitions */
         .sidebar-transition {
             transition: transform 0.3s ease-in-out;
         }
         /* Active menu item indicator */
         .menu-item-active {
-            background: rgba(var(--theme-primary-rgb), 0.1);
+            background: rgba(200, 241, 53, 0.12);
             border-left: 3px solid var(--theme-primary);
         }
         /* Hover animations */
@@ -317,7 +346,7 @@
                 <!-- Mobile User Profile -->
                 <div class="px-6 py-4 border-b border-slate-200 bg-gradient-to-br from-slate-50 to-white">
                     <div class="flex items-center space-x-3">
-                        <div class="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white text-lg font-semibold">
+                        <div class="w-12 h-12 bg-theme-gradient-br rounded-full flex items-center justify-center text-white text-lg font-semibold">
                             {% if user.profile_picture %}
                                 <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="w-full h-full rounded-full object-cover">
                             {% else %}
@@ -475,7 +504,7 @@
                             aria-expanded="false"
                             aria-haspopup="true"
                         >
-                            <div class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-md">
+                            <div class="w-8 h-8 bg-theme-gradient-br rounded-full flex items-center justify-center text-white text-sm font-semibold shadow-md">
                                 {% if user.profile_picture %}
                                     <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="w-full h-full rounded-full object-cover">
                                 {% else %}
@@ -557,7 +586,7 @@
                 {% if messages %}
                     <div class="mb-6 space-y-2">
                         {% for message in messages %}
-                            <div class="p-4 rounded-lg {% if message.tags == 'error' %}bg-red-50 border border-red-200 text-red-800{% elif message.tags == 'success' %}bg-theme-primary-light border border-theme-primary text-theme-primary-dark{% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %} animate-fade-in" style="{% if message.tags == 'success' %}background-color: rgba(var(--theme-primary-rgb), 0.1); border-color: var(--theme-primary); color: var(--theme-primary-dark);{% endif %}">
+                            <div class="p-4 rounded-lg {% if message.tags == 'error' %}bg-red-50 border border-red-200 text-red-800{% elif message.tags == 'success' %}bg-theme-primary-light border border-theme-primary text-theme-primary-dark{% else %}bg-blue-50 border border-blue-200 text-blue-800{% endif %} animate-fade-in">
                             {{ message }}
                         </div>
                         {% endfor %}
